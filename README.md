@@ -83,7 +83,7 @@ Patient views History
 
 > ⚠️ **Note:** Model files (`*.h5`, `*.pth`, `*.pkl`, `*.joblib`) are **not included** in this repo due to GitHub size limits. Download them using the link below.
 >
-> 📥 **Download Models:** *(Add your Google Drive / HuggingFace link here)*
+
 
 ---
 
@@ -258,7 +258,7 @@ This ensures every patient leaves with actionable, personalized health guidance 
 ## 👨‍💻 Author
 
 **Ujjwal Katare**
-🔗 [GitHub: @ujjwalkatare](https://github.com/ujjwalkatare)
+
 
 ---
 
