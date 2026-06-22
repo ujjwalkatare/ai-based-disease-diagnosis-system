@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<script>document.body.classList.add('dashboard-page');</script>
+
+<button class="menu-toggle" id="menuToggle">
+  <i class="fa fa-bars"></i>
+</button>
+
+<div class="dashboard-container">
+
+  <!-- ================================================================
+       SIDEBAR
+  ================================================================ -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-brand">
+        <img src="{% static 'img/favicon.png' %}" alt="logo">
+        <h3>AI Healthcare</h3>
+      </div>
+      <ul class="sidebar-menu">
+
+        <li>
+          <a href="{% url 'dashboard' %}">
+            <i class="ti-dashboard"></i> Dashboard
+          </a>
+        </li>
+
+        <li>
+          <a href="{% url 'profile' %}">
+            <i class="ti-user"></i> Profile
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'patient_check' %}">
+            <i class="ti-heart-broken"></i> Patient Check
+          </a>
+        </li>
+
+        <li>
+          <a href="{% url 'check_test' %}">
+            <i class="ti-pulse"></i> Check Test
+          </a>
+        </li>
+
+        <li class="active">
+          <a href="{% url 'history' %}">
+            <i class="ti-time"></i> History
+          </a>
+        </li>
+        <li><a href="{% url 'analytics' %}"><i class="ti-bar-chart"></i> Analytics</a></li>
+
+      </ul>
+    </div>
+    <div class="sidebar-bottom">
+      <a href="{% url 'logout' %}" class="logout-btn">
+        <i class="fa fa-sign-out-alt"></i>&nbsp; Logout
+      </a>
+    </div>
+  </div>
+
+  <!-- ================================================================
+       MAIN CONTENT
+  ================================================================ -->
+  <div class="main-content" style="background-image:none !important; background-color:#eef2f7 !important;">
+
+    <div class="history-wrapper">
+
+      <!-- ── Page Title ── -->
+      <div style="margin-bottom:22px;">
+        <h2 style="font-size:24px;font-weight:700;color:#2c3e50;margin:0;">
+          🧾 Patient History
+        </h2>
+        <p style="color:#5a6e7f;margin:4px 0 0;font-size:14px;">
+          All previous diagnosis records
+        </p>
+      </div>
+
+      <!-- ── Search + Filter Bar ── -->
+      <form method="GET" action="{% url 'history' %}" id="filter-form">
+        <div style="
+            display:flex;flex-wrap:wrap;gap:12px;
+            align-items:center;margin-bottom:20px;
+          ">
+
+          <!-- Search box -->
+          <div style="position:relative;flex:1;min-width:200px;">
+            <i class="fa fa-search" style="
+                position:absolute;left:12px;top:50%;
+                transform:translateY(-50%);
+                color:#94a3b8;font-size:14px;
+              "></i>
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search disease or symptom…" style="
+                     width:100%;padding:10px 14px 10px 36px;
+                     border:1px solid #d1d5db;border-radius:8px;
+                     font-size:13px;background:#fff;
+                     outline:none;color:#374151;
+                   ">
+          </div>
+
+          <!-- Result filter -->
+          <select name="result_filter" onchange="document.getElementById('filter-form').submit()" style="
+                    padding:10px 14px;
+                    border:1px solid #d1d5db;border-radius:8px;
+                    font-size:13px;background:#fff;color:#374151;
+                    outline:none;cursor:pointer;
+                  ">
+            <option value="" {% if not result_filter %}selected{% endif %}>All Results</option>
+            <option value="Positive" {% if result_filter == "Positive" %}selected{% endif %}>Positive</option>
+            <option value="Negative" {% if result_filter == "Negative" %}selected{% endif %}>Negative</option>
+            <option value="Pending" {% if result_filter == "Pending" %}selected{% endif %}>Pending</option>
+          </select>
+
+          <!-- Search submit -->
+          <button type="submit" style="
+                    padding:10px 20px;
+                    background:#2c7da0;color:#fff;
+                    border:none;border-radius:8px;
+                    font-size:13px;font-weight:600;cursor:pointer;
+                  ">
+            Search
+          </button>
+
+          <!-- Clear -->
+          {% if search_query or result_filter %}
+          <a href="{% url 'history' %}" style="
+               padding:10px 16px;
+               border:1px solid #d1d5db;border-radius:8px;
+               font-size:13px;color:#5a6e7f;text-decoration:none;
+             ">
+            ✕ Clear
+          </a>
+          {% endif %}
+
+        </div>
+      </form>
+
+      <!-- ── Table Card ── -->
+      <div class="table-card">
+
+        {% if records %}
+        <div class="table-wrapper">
+          <table class="history-table">
+
+            <thead>
+              <tr>
+                <th style="width:5%">#</th>
+                <th style="width:14%">Patient</th>
+                <th style="width:13%">Disease</th>
+                <th style="width:24%">Symptoms</th>
+                <th style="width:10%">Result</th>
+                <th style="width:10%">Status</th>
+                <th style="width:11%">Date</th>
+                <th style="width:9%">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for record in records %}
+              <tr>
+
+                <td style="color:#94a3b8;font-size:13px;">
+                  {{ forloop.counter }}
+                </td>
+
+                <td class="patient-name">
+                  <span style="
+          display:inline-flex;align-items:center;gap:6px;
+          font-weight:600;color:#2c3e50;font-size:13px;
+        ">
+                    <span style="
+            width:28px;height:28px;
+            background:#e8f4fd;border-radius:50%;
+            display:inline-flex;align-items:center;justify-content:center;
+            font-size:13px;
+          ">👤</span>
+                    {{ request.session.patient_name|default:"Patient" }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="badge badge-disease">
+                    {{ record.disease_name }}
+                  </span>
+                </td>
+
+                <td style="color:#555;font-size:13px;line-height:1.5;">
+                  {{ record.symptoms_display|default:"General Checkup"|truncatewords:6 }}
+                </td>
+
+                <td>
+                  <span class="badge {{ record.result_class }}">
+                    {{ record.result_label }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="badge {{ record.status_class }}">
+                    {{ record.status }}
+                  </span>
+                </td>
+
+                <td style="color:#5a6e7f;font-size:13px;">
+                  {{ record.formatted_date }}
+                </td>
+
+                <td>
+                  <a href="{% url record.redirect_url %}" class="btn-view">
+                    <i class="fa fa-eye" style="margin-right:4px;"></i>View
+                  </a>
+                </td>
+
+              </tr>
+              {% endfor %}
+            </tbody>
+
+          </table>
+        </div><!-- /table-wrapper -->
+
+        <!-- ── Pagination ── -->
+        {% if page_obj.has_other_pages %}
+        <div style="
+            display:flex;justify-content:center;align-items:center;
+            gap:8px;padding:20px 0 4px;flex-wrap:wrap;
+          ">
+
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&result_filter={{ result_filter }}"
+            class="page-btn">‹ Prev</a>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+          <span class="page-btn page-active">{{ num }}</span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+            href="?page={{ num }}&search={{ search_query }}&result_filter={{ result_filter }}" class="page-btn">{{ num
+            }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&result_filter={{ result_filter }}"
+              class="page-btn">Next ›</a>
+            {% endif %}
+
+            <span style="font-size:12px;color:#94a3b8;margin-left:8px;">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div style="text-align:center;padding:60px 20px;">
+          <div style="font-size:48px;margin-bottom:14px;">📋</div>
+          <h3 style="color:#2c3e50;font-size:18px;font-weight:600;margin:0 0 6px;">
+            No Records Found
+          </h3>
+          <p style="color:#94a3b8;font-size:14px;margin:0 0 20px;">
+            {% if search_query or result_filter %}
+            No results match your search. Try adjusting the filters.
+            {% else %}
+            You have no diagnosis history yet. Run a test to get started.
+            {% endif %}
+          </p>
+          {% if search_query or result_filter %}
+          <a href="{% url 'history' %}" style="
+     padding:10px 16px;
+     border:1px solid #d1d5db;border-radius:8px;
+     font-size:13px;color:#ef4444;text-decoration:none;
+     font-weight:600;
+   ">
+            ✕ Reset
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      </div><!-- /table-card -->
+
+    </div><!-- /history-wrapper -->
+  </div><!-- /main-content -->
+
+</div><!-- /dashboard-container -->
+
+<!-- ================================================================
+     PAGE STYLES
+================================================================ -->
+<style>
+  /* Layout */
+  .history-wrapper {
+    padding: 10px 0;
+  }
+
+  /* Table card */
+  .table-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    padding: 24px;
+    width: 100%;
+  }
+
+  /* Table */
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .history-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+  }
+
+  /* Header */
+  .history-table thead tr {
+    background: linear-gradient(135deg, #2c7da0, #468faf);
+  }
+
+  .history-table thead th {
+    padding: 14px 16px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-align: left;
+  }
+
+  .history-table thead th:first-child {
+    border-radius: 10px 0 0 0;
+  }
+
+  .history-table thead th:last-child {
+    border-radius: 0 10px 0 0;
+  }
+
+  /* Body rows */
+  .history-table tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    font-size: 13px;
+  }
+
+  .history-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .history-table tbody tr:hover {
+    background: #f5f9ff;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .badge-disease {
+    background: #e0f2fe;
+    color: #0369a1;
+  }
+
+  .badge-positive {
+    background: #ffe5e5;
+    color: #d32f2f;
+  }
+
+  .badge-negative {
+    background: #e6f4ea;
+    color: #2e7d32;
+  }
+
+  .badge-pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .badge-completed {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  /* View button */
+  .btn-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #1976d2;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-view:hover {
+    background: #125ea8;
+    transform: translateY(-1px);
+    color: #fff;
+  }
+
+  /* Pagination */
+  .page-btn {
+    display: inline-block;
+    padding: 7px 13px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    font-size: 13px;
+    color: #2c7da0;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .page-btn:hover {
+    background: #e8f4fd;
+    border-color: #2c7da0;
+  }
+
+  .page-active {
+    background: #2c7da0 !important;
+    color: #fff !important;
+    border-color: #2c7da0 !important;
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+
+    .history-table th,
+    .history-table td {
+      padding: 10px;
+      font-size: 12px;
+    }
+
+    .table-card {
+      padding: 14px;
+    }
+  }
+</style>
+
+{% endblock %}

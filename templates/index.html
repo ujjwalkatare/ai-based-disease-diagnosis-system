@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- banner part start-->
+<section class="banner_part"
+    style="background-image: linear-gradient(100deg, #f9fcff 0%, #eef2fc 100%); background-size: cover; background-position: center;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-xl-6">
+                <div class="banner_text">
+                    <div class="banner_text_iner">
+
+                        <h1 style="font-size: 54px; font-weight: 800;">AI-Powered Disease <br>Detection in <span
+                                style="color:#0065e1;">Seconds</span></h1>
+                        <p class="mt-3 mb-4" style="font-size: 1.1rem; color: #2c3e50; max-width: 90%;">
+                            Upload symptoms or clinical data — our advanced ensemble models deliver real-time
+                            predictions for early diagnosis and better outcomes.
+                        </p>
+                        <div class="hero-cta-group">
+                            <a href="{% url 'dashboard' %}" class="btn_2"
+                                style="background:#0065e1; color:#fff; border:none; padding: 12px 38px;">✨ Start
+                                Diagnosis</a>
+                            <a href="#how-it-works" class="btn-outline-light-custom"
+                                style="border-color:#0065e1; color:#0065e1; background:transparent;">How It Works →</a>
+                        </div>
+                        <div class="mt-4">
+                            <small><i class="fas fa-shield-alt text-primary-custom"></i> HIPAA-ready · 99.9% uptime ·
+                                Trusted by clinicians</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-xl-6">
+                <div class="banner_img">
+                    <img src="static/img/banner_img.png" alt="AI Diagnosis" class="img-fluid"
+                        style="filter: drop-shadow(0 20px 20px rgba(0,0,0,0.1));">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row text-center">
+
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h2>10K+</h2>
+                    <p>Predictions</p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h2>95%</h2>
+                    <p>Accuracy</p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h2>6+</h2>
+                    <p>Diseases</p>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h2>24/7</h2>
+                    <p>AI Support</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- 🔹 DISEASE COVERAGE SECTION (new) -->
+<section class="gray_bg section_padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-7 text-center">
+                <div class="section_tittle">
+                    <h2>Diseases We Cover</h2>
+                    <p>Advanced AI models trained on medical datasets for precise multi-disease prediction</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-md-6">
+                <div class="disease-card"><i class="fas fa-heartbeat"></i>
+                    <h5>Heart Disease</h5>
+                    <p class="small text-muted">Chest pain, cholesterol, ECG</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="disease-card"><i class="fas fa-tachometer-alt"></i>
+                    <h5>Diabetes</h5>
+                    <p class="small text-muted">Glucose, insulin, BMI metrics</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="disease-card"><i class="fas fa-lungs"></i>
+                    <h5>Pneumonia</h5>
+                    <p class="small text-muted">Chest X-ray & respiratory symptoms</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="disease-card"><i class="fas fa-fill-drip"></i>
+                    <h5>Kidney Disease</h5>
+                    <p class="small text-muted">Creatinine, blood urea, age</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="disease-card"><i class="fas fa-brain"></i>
+                    <h5>Liver Disorder</h5>
+                    <p class="small text-muted">Enzymes, bilirubin, proteins</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="disease-card"><i class="fas fa-bug"></i>
+                    <h5>Malaria</h5>
+                    <p class="small text-muted">Fever, parasite detection</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- 🔹 HOW IT WORKS (3-step professional flow) -->
+<section id="how-it-works" class="section_padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-6 text-center">
+                <div class="section_tittle">
+                    <h2>How It Works</h2>
+                    <p>Seamless 3‑step AI pipeline from symptom to insight</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-4 text-center">
+                <div class="step-circle">1</div>
+                <h4>Enter Symptoms</h4>
+                <p class="text-muted">Input your symptoms, lab results or risk factors via smart form.</p>
+            </div>
+            <div class="col-md-4 mb-4 text-center">
+                <div class="step-circle">2</div>
+                <h4>AI Analysis</h4>
+                <p class="text-muted">Our ensemble ML models process data in real time with explainable AI.</p>
+            </div>
+            <div class="col-md-4 mb-4 text-center">
+                <div class="step-circle">3</div>
+                <h4>Get Prediction</h4>
+                <p class="text-muted">Receive instant diagnosis report + recommendations.</p>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'dashboard' %}" class="btn_2" style="background:#0065e1; color:white;">Try AI Diagnosis Now
+                →</a>
+        </div>
+    </div>
+</section>
+
+<!-- 🔹 UPGRADED FEATURES SECTION (technical strength) -->
+<section class="gray_bg section_padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-8 text-center">
+                <div class="section_tittle">
+                    <h2>AI Medical Prediction System</h2>
+                    <p>Powered by machine learning models trained on real medical datasets</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="feature-upgraded text-center">
+                    <i class="fas fa-chart-line"></i>
+                    <h5>Instant Prediction Results</h5>
+                    <p class="small">Get disease predictions instantly using trained ML models with high accuracy.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="feature-upgraded text-center">
+                    <i class="fas fa-robot"></i>
+                    <h5>Multi-Disease Detection</h5>
+                    <p class="small">Supports prediction for Diabetes, Heart, Kidney, Liver, Malaria & Pneumonia.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="feature-upgraded text-center">
+                    <i class="fas fa-history"></i>
+                    <h5>Patient History Management</h5>
+                    <p class="small">Automatically saves test results and allows tracking of previous records.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="feature-upgraded text-center">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <h5>Explainable AI</h5>
+                    <p class="small">Feature importance & SHAP values to interpret predictions.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-upgraded text-center">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h5>Scalable Cloud</h5>
+                    <p class="small">Secure, HIPAA‑aligned infrastructure ready for clinics.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-upgraded text-center">
+                    <i class="fas fa-chart-pie"></i>
+                    <h5>Dashboard Analytics</h5>
+                    <p class="small">Visualize health trends and monitor disease risks over time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 🔹 TESTIMONIAL / TRUST SECTION (medical credibility) -->
+<section class="section_padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-7 text-center">
+                <div class="section_tittle">
+                    <h2>Trusted by Healthcare Professionals</h2>
+                    <p>What doctors and early users say about our system</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <i class="fas fa-quote-left fa-2x text-primary-custom mb-3" style="opacity:0.7;"></i>
+                    <p class="fst-italic">"Remarkable accuracy for early detection of diabetes and heart conditions.
+                        Integrates well with clinical workflow."</p>
+                    <div class="mt-3"><strong>— Dr. R. Mehta</strong><br><small>Cardiologist, Mumbai</small></div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <i class="fas fa-quote-left fa-2x text-primary-custom mb-3" style="opacity:0.7;"></i>
+                    <p class="fst-italic">"The AI tool reduced our preliminary diagnosis time by 40%. Very intuitive
+                        dashboard."</p>
+                    <div class="mt-3"><strong>— Dr. S. Krishnan</strong><br><small>Public Health Lead</small></div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <i class="fas fa-quote-left fa-2x text-primary-custom mb-3" style="opacity:0.7;"></i>
+                    <p class="fst-italic">"Life-saving predictions for rural areas. The ML model is consistent and
+                        reliable."</p>
+                    <div class="mt-3"><strong>— Nurse P. Joseph</strong><br><small>Community Health</small></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 🔹 CALL TO ACTION (Product Upgrade) -->
+<section class="regervation_part" style="background-image: linear-gradient(120deg, #0b2b5c, #0065e1);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="regervation_content">
+                    <h2 style="color:white; font-size: 34px;">Ready for a smarter diagnosis?</h2>
+                    <p style="color: rgba(255,255,240,0.9);">Join thousands of users leveraging AI for fast, accurate
+                        health insights.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-right">
+                <a href="{% url 'register' %}" class="btn_2"
+                    style="background:white; color:#0065e1; font-weight:600;">Get Started Free →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- banner part start-->
+
+
+
+<!-- about us part end-->
+
+<!-- feature_part start-->
+{% endblock %}

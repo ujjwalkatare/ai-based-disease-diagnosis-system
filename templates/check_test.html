@@ -1,0 +1,714 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Mobile toggle -->
+<button class="menu-toggle" id="menuToggle">
+    ☰ Menu
+</button>
+
+<div class="dashboard-container">
+
+    <!-- Sidebar (SAME AS DASHBOARD) -->
+    <div class="sidebar" id="sidebar">
+
+        <div class="sidebar-top">
+
+            <div class="sidebar-brand">
+                <img src="{% static 'img/favicon.png' %}" alt="logo">
+                <h3>AI Healthcare</h3>
+            </div>
+
+            <ul class="sidebar-menu">
+
+                <li>
+                    <a href="{% url 'dashboard' %}">
+                        <i class="ti-dashboard"></i> Dashboard
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'profile' %}">
+                        <i class="ti-user"></i> Profile
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'patient_check' %}">
+                        <i class="ti-heart-broken"></i> Patient Check
+                    </a>
+                </li>
+
+                <li class="active">
+                    <a href="{% url 'check_test' %}">
+                        <i class="ti-pulse"></i> Check Test
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{% url 'history' %}">
+                        <i class="ti-time"></i> History
+                    </a>
+                </li>
+                <li><a href="{% url 'analytics' %}"><i class="ti-bar-chart"></i> Analytics</a></li>
+
+            </ul>
+        </div>
+
+        <div class="sidebar-bottom">
+            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+        </div>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- SECTION 1: SMART RECOMMENDATION BASED ON PREVIOUS PREDICTION -->
+        {% if session_result %}
+        <div class="recommended-section">
+            <div class="recommended-header">
+                <i class="ti-crown"></i>
+                <h3>🧠 Smart Recommendation Based on Your Symptoms</h3>
+            </div>
+            <div class="recommended-card {% if session_severity == 'High' %}urgent{% endif %}">
+                <div class="recommended-icon">
+                    {% if session_result == "Diabetes" %}
+                    <img src="{% static 'img/diseases/diabetes.png' %}" alt="Diabetes"
+                        onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                    {% elif session_result == "Heart Disease" %}
+                    <img src="{% static 'img/diseases/heart.png' %}" alt="Heart Disease"
+                        onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                    {% elif session_result == "Kidney Disease" %}
+                    <img src="{% static 'img/diseases/kidney.png' %}" alt="Kidney Disease"
+                        onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                    {% elif session_result == "Liver Disease" %}
+                    <img src="{% static 'img/diseases/liver.png' %}" alt="Liver Disease"
+                        onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                    {% elif session_result == "Malaria" %}
+                    <img src="{% static 'img/diseases/malaria.png' %}" alt="Malaria"
+                        onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                    {% elif session_result == "Pneumonia" %}
+                    <img src="{% static 'img/diseases/pneumonia.png' %}" alt="Pneumonia"
+                        onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                    {% else %}
+                    <i class="ti-medical"></i>
+                    {% endif %}
+                </div>
+                <div class="recommended-info">
+                    <div class="recommended-disease">{{ session_result }}</div>
+                    <div class="recommended-details">
+                        <span class="detail-badge">
+                            <i class="ti-bar-chart"></i> Confidence: {{ session_confidence }}%
+                        </span>
+                        <span class="detail-badge severity-{{ session_severity|lower }}">
+                            <i class="ti-alert"></i> Severity: {{ session_severity|title }}
+                        </span>
+                    </div>
+                    <p class="recommended-desc">
+                        {% if session_result == "Diabetes" %}
+                        Based on your symptoms (frequent urination, increased thirst, fatigue), a blood glucose test is
+                        recommended.
+                        {% elif session_result == "Heart Disease" %}
+                        Based on your symptoms (chest pain, shortness of breath), an ECG and lipid profile is
+                        recommended.
+                        {% elif session_result == "Kidney Disease" %}
+                        Based on your symptoms, a creatinine and urine test is recommended.
+                        {% elif session_result == "Liver Disease" %}
+                        Based on your symptoms, a liver function test is recommended.
+                        {% elif session_result == "Malaria" %}
+                        Based on your symptoms (fever, headache, body ache), a blood smear test is recommended.
+                        {% elif session_result == "Pneumonia" %}
+                        Based on your symptoms (cough, fever, shortness of breath), a chest X-ray is recommended.
+                        {% else %}
+                        Diagnostic test recommended for confirmation.
+                        {% endif %}
+                    </p>
+                    {% if session_severity == 'High' %}
+                    <div class="urgency-warning">
+                        <i class="ti-alert"></i> ⚠️ Urgent test recommended due to high severity
+                    </div>
+                    {% endif %}
+                    <a href="{% url session_recommended_url %}" class="recommended-start-btn">
+                        🧪 Take Recommended Test <i class="ti-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Context Banner -->
+        <div class="ai-context-banner">
+            <i class="ti-crown"></i>
+            <div>
+                <strong>AI Suggestion</strong>
+                <p>Based on your symptom analysis, we recommend taking the highlighted test for accurate diagnosis.</p>
+            </div>
+        </div>
+        {% else %}
+        <!-- No recommendation banner for direct visit -->
+        <div class="info-banner">
+            <i class="ti-info-alt"></i>
+            <div>
+                <strong>Select a Test</strong>
+                <p>Choose a diagnostic test from below. For best results, complete symptom check first to get AI
+                    recommendations.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- SECTION 2: ALL TESTS GRID -->
+        <h2 class="section-title">🧪 All Diagnostic Tests</h2>
+        <p class="welcome-sub">Choose a test based on your condition</p>
+
+        <div class="test-grid">
+            {% for test in tests %}
+            <div
+                class="dashboard_card {% if session_result and test.name == session_result %}recommended-card-highlight{% endif %}">
+                {% if session_result and test.name == session_result %}
+                <div class="recommended-badge">
+                    <i class="ti-crown"></i> 🔥 AI Recommended
+                </div>
+                {% endif %}
+
+                <div class="test-card-header">
+                    <div class="test-icon">
+                        {% if test.name == "Diabetes" %}
+                        <img src="{% static 'img/diseases/diabetes.png' %}" alt="Diabetes"
+                            onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                        {% elif test.name == "Heart Disease" %}
+                        <img src="{% static 'img/diseases/heart.png' %}" alt="Heart Disease"
+                            onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                        {% elif test.name == "Kidney Disease" %}
+                        <img src="{% static 'img/diseases/kidney.png' %}" alt="Kidney Disease"
+                            onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                        {% elif test.name == "Liver Disease" %}
+                        <img src="{% static 'img/diseases/liver.png' %}" alt="Liver Disease"
+                            onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                        {% elif test.name == "Malaria" %}
+                        <img src="{% static 'img/diseases/malaria.png' %}" alt="Malaria"
+                            onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                        {% elif test.name == "Pneumonia" %}
+                        <img src="{% static 'img/diseases/pneumonia.png' %}" alt="Pneumonia"
+                            onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                        {% else %}
+                        <i class="ti-medical"></i>
+                        {% endif %}
+                    </div>
+                    <h3>{{ test.name }}</h3>
+                </div>
+
+                <!-- Test Description -->
+                <p class="test-description">
+                    {% if test.name == "Diabetes" %}
+                    Check blood sugar levels and insulin resistance
+                    {% elif test.name == "Heart Disease" %}
+                    Analyze heart condition, ECG and risk factors
+                    {% elif test.name == "Kidney Disease" %}
+                    Check kidney function and creatinine levels
+                    {% elif test.name == "Liver Disease" %}
+                    Analyze liver enzymes and function tests
+                    {% elif test.name == "Malaria" %}
+                    Upload blood cell image for parasite detection
+                    {% elif test.name == "Pneumonia" %}
+                    Upload chest X-ray for infection detection
+                    {% else %}
+                    Diagnostic test for accurate detection
+                    {% endif %}
+                </p>
+
+                <!-- Test Type Badge -->
+                <div class="test-type-badge">
+                    {% if test.name == "Malaria" or test.name == "Pneumonia" %}
+                    <i class="ti-image"></i> 📷 Image Upload
+                    {% else %}
+                    <i class="ti-file"></i> 📊 Form Input
+                    {% endif %}
+                </div>
+
+                <!-- Button with different color for recommended test -->
+                {% if session_result and test.name == session_result %}
+                <a href="{% url test.url %}" class="test-btn recommended-btn">
+                    🔥 Start Recommended Test <i class="ti-arrow-right"></i>
+                </a>
+                {% else %}
+                <a href="{% url test.url %}" class="test-btn">
+                    Start Test <i class="ti-arrow-right"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- SECTION 3: INFO FOOTER (Trust Elements) -->
+        <div class="info-footer">
+            <div class="info-item">
+                <i class="ti-shield"></i>
+                <span>AI-powered diagnostics</span>
+            </div>
+            <div class="info-item">
+                <i class="ti-lock"></i>
+                <span>Secure & confidential</span>
+            </div>
+            <div class="info-item">
+                <i class="ti-medical"></i>
+                <span>Clinically validated</span>
+            </div>
+            <div class="info-item">
+                <i class="ti-zap"></i>
+                <span>Fast diagnosis</span>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- JS -->
+<script src="{% static 'js/dashboard.js' %}"></script>
+
+<style>
+    /* ========== MAIN STYLES ========== */
+    body,
+    .dashboard-container,
+    .main-content {
+        background: none !important;
+        background-color: #f5f7fa !important;
+    }
+
+    .main-content {
+        padding: 20px 30px;
+    }
+
+    .welcome_text {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #2c3e50;
+    }
+
+    .welcome-sub {
+        color: #7f8c8d;
+        margin-bottom: 30px;
+        font-size: 14px;
+    }
+
+    .section-title {
+        font-size: 22px;
+        font-weight: 600;
+        margin: 30px 0 10px 0;
+        color: #2c3e50;
+    }
+
+    /* ========== RECOMMENDED SECTION ========== */
+    .recommended-section {
+        margin-bottom: 25px;
+    }
+
+    .recommended-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .recommended-header i {
+        font-size: 24px;
+        color: #f39c12;
+    }
+
+    .recommended-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .recommended-card {
+        display: flex;
+        gap: 20px;
+        background: #e8f4fd;
+        border-radius: 20px;
+        padding: 20px;
+        border: 2px solid #0065e1;
+        box-shadow: 0 8px 25px rgba(0, 101, 225, 0.15);
+        transition: transform 0.2s;
+    }
+
+    .recommended-card:hover {
+        transform: scale(1.01);
+    }
+
+    .recommended-card.urgent {
+        border-color: #e74c3c;
+        background: #fee8e8;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+        }
+    }
+
+    .recommended-icon {
+        flex-shrink: 0;
+    }
+
+    .recommended-icon img,
+    .recommended-icon i {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        font-size: 70px;
+        color: #0065e1;
+    }
+
+    .recommended-info {
+        flex: 1;
+    }
+
+    .recommended-disease {
+        font-size: 28px;
+        font-weight: 800;
+        color: #1a2a3a;
+        margin-bottom: 10px;
+    }
+
+    .recommended-details {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .detail-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        background: white;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .detail-badge i {
+        font-size: 12px;
+    }
+
+    .severity-low {
+        background: #e8f8f5;
+        color: #27ae60;
+    }
+
+    .severity-medium {
+        background: #fef9e7;
+        color: #f39c12;
+    }
+
+    .severity-high {
+        background: #fdedec;
+        color: #e74c3c;
+    }
+
+    .recommended-desc {
+        color: #5a6e7f;
+        font-size: 14px;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+
+    .urgency-warning {
+        background: #fdedec;
+        padding: 8px 12px;
+        border-radius: 10px;
+        color: #e74c3c;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: inline-block;
+    }
+
+    .recommended-start-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #0065e1;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .recommended-start-btn:hover {
+        background: #0050b3;
+        transform: translateX(5px);
+    }
+
+    /* ========== AI CONTEXT BANNER ========== */
+    .ai-context-banner {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: #f0f7ff;
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border-left: 4px solid #0065e1;
+    }
+
+    .ai-context-banner i {
+        font-size: 28px;
+        color: #0065e1;
+    }
+
+    .ai-context-banner strong {
+        display: block;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+
+    .ai-context-banner p {
+        font-size: 12px;
+        color: #5a6e7f;
+        margin: 0;
+    }
+
+    .info-banner {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: #f8fafd;
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border-left: 4px solid #95a5a6;
+    }
+
+    .info-banner i {
+        font-size: 28px;
+        color: #95a5a6;
+    }
+
+    .info-banner strong {
+        display: block;
+        font-size: 14px;
+        color: #2c3e50;
+    }
+
+    .info-banner p {
+        font-size: 12px;
+        color: #5a6e7f;
+        margin: 0;
+    }
+
+    /* ========== TEST GRID ========== */
+    .test-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+        margin-top: 20px;
+    }
+
+    .dashboard_card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s;
+        position: relative;
+        border: 1px solid #eef2f8;
+    }
+
+    .dashboard_card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .recommended-card-highlight {
+        border: 2px solid #0065e1;
+        background: #f0f7ff;
+        box-shadow: 0 4px 20px rgba(0, 101, 225, 0.2);
+        transform: scale(1.02);
+    }
+
+    .recommended-card-highlight:hover {
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    .recommended-badge {
+        position: absolute;
+        top: -12px;
+        right: 15px;
+        background: #0065e1;
+        color: white;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 8px rgba(0, 101, 225, 0.3);
+    }
+
+    .test-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .test-icon img,
+    .test-icon i {
+        width: 45px;
+        height: 45px;
+        object-fit: contain;
+        font-size: 40px;
+        color: #0065e1;
+    }
+
+    .test-card-header h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .test-description {
+        font-size: 12px;
+        color: #5a6e7f;
+        line-height: 1.5;
+        margin-bottom: 12px;
+    }
+
+    .test-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        background: #f8fafd;
+        border-radius: 20px;
+        font-size: 10px;
+        color: #7f8c8d;
+        margin-bottom: 15px;
+    }
+
+    .test-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 8px 18px;
+        background: #2c7da0;
+        color: #fff;
+        border-radius: 25px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+        width: fit-content;
+    }
+
+    .test-btn:hover {
+        background: #1b5e7a;
+        transform: translateX(3px);
+    }
+
+    .recommended-btn {
+        background: #27ae60 !important;
+    }
+
+    .recommended-btn:hover {
+        background: #219a52 !important;
+    }
+
+    /* ========== INFO FOOTER ========== */
+    .info-footer {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 40px;
+        padding: 20px;
+        background: #f8fafd;
+        border-radius: 16px;
+        flex-wrap: wrap;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #5a6e7f;
+    }
+
+    .info-item i {
+        font-size: 18px;
+        color: #0065e1;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 992px) {
+        .test-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .recommended-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .recommended-details {
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .main-content {
+            padding: 15px;
+        }
+
+        .welcome_text {
+            font-size: 22px;
+        }
+
+        .recommended-disease {
+            font-size: 24px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .test-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .recommended-disease {
+            font-size: 22px;
+        }
+
+        .info-footer {
+            gap: 20px;
+        }
+
+        .recommended-icon img,
+        .recommended-icon i {
+            width: 60px;
+            height: 60px;
+        }
+    }
+</style>
+
+{% endblock %}

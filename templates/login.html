@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    /* ❌ Hide footer */
+    .footer-area {
+        display: none;
+    }
+
+    /* ❌ Hide Login button in header */
+    /* Hide ONLY header login button */
+    header .btn_2 {
+        display: none !important;
+    }
+
+    /* ✅ Compact layout */
+    .login_section {
+        padding-top: 120px !important;
+        padding-bottom: 40px !important;
+    }
+
+    .card-body {
+        padding: 25px !important;
+    }
+
+    .section_tittle h2 {
+        font-size: 36px;
+        margin-bottom: 5px;
+    }
+
+    .section_tittle p {
+        margin-bottom: 20px;
+    }
+</style>
+
+<section class="login_section">
+    <div class="container">
+
+        <!-- Title -->
+        <div class="section_tittle text-center">
+            <h2>Login</h2>
+            <p>Access your AI Healthcare Dashboard</p>
+        </div>
+
+        <!-- Form -->
+        <div class="row justify-content-center">
+            <div class="col-lg-5">
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <input type="email" name="email" class="form-control" placeholder="Email" required>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="password" name="password" class="form-control" placeholder="Password"
+                                    required>
+                            </div>
+
+                            <button type="submit" class="btn_2 w-100">Login</button>
+
+                        </form>
+
+                        <!-- Register link -->
+                        <div class="text-center mt-3">
+                            <small>
+                                Don't have an account?
+                                <a href="{% url 'register' %}">Register</a>
+                            </small>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

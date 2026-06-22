@@ -1,0 +1,764 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Mobile toggle -->
+<button class="menu-toggle" id="menuToggle">
+    ☰ Menu
+</button>
+
+<div class="dashboard-container">
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-brand">
+                <img src="{% static 'img/favicon.png' %}" alt="logo">
+                <h3>AI Healthcare</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <a href="{% url 'dashboard' %}">
+                        <i class="ti-dashboard"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'profile' %}">
+                        <i class="ti-user"></i> Profile
+                    </a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'patient_check' %}active{% endif %}">
+                    <a href="{% url 'patient_check' %}">
+                        <i class="ti-heart-broken"></i> Patient Check
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'check_test' %}">
+                        <i class="ti-pulse"></i> Check Test
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'history' %}">
+                        <i class="ti-time"></i> History
+                    </a>
+                </li>
+                <li><a href="{% url 'analytics' %}"><i class="ti-bar-chart"></i> Analytics</a></li>
+            </ul>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Welcome Section -->
+        <div class="content-box mb-4">
+            <h2 class="welcome_text">Welcome, {{ name|default:"Patient" }} 👋</h2>
+            <p class="welcome-sub">Your AI-powered health companion for fast and accurate diagnosis</p>
+        </div>
+
+        <!-- ========== 1. SUMMARY CARDS (Test Stats) ========== -->
+        <div class="row stats-row">
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="ti-files"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ total_tests|default:"0" }}</h3>
+                        <p>Total Tests</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card completed">
+                    <div class="stat-icon">
+                        <i class="ti-check-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ completed_tests|default:"0" }}</h3>
+                        <p>Completed Tests</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card pending">
+                    <div class="stat-icon">
+                        <i class="ti-alarm-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ pending_tests|default:"0" }}</h3>
+                        <p>Pending Tests</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 2. QUICK ACTIONS PANEL ========== -->
+        <div class="quick-actions-panel">
+            <h4 class="panel-title">⚡ Quick Actions</h4>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'patient_check' %}" class="action-card">
+                        <i class="ti-heart-broken"></i>
+                        <h5>Check Symptoms</h5>
+                        <p>AI-based symptom analysis</p>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'check_test' %}" class="action-card">
+                        <i class="ti-pulse"></i>
+                        <h5>Start Test</h5>
+                        <p>New diagnostic test</p>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'history' %}" class="action-card">
+                        <i class="ti-time"></i>
+                        <h5>View History</h5>
+                        <p>Past diagnoses & results</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 3. RECENT ACTIVITY TABLE (Clickable Rows) ========== -->
+        <div class="recent-activity-panel">
+            <h4 class="panel-title">📋 Recent Activity</h4>
+            <div class="table-responsive">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th><i class="ti-medical"></i> Disease / Test</th>
+                            <th><i class="ti-stats-up"></i> Result</th>
+                            <th><i class="ti-calendar"></i> Date</th>
+                            <th><i class="ti-control-forward"></i> Status</th>
+                            <th><i class="ti-eye"></i> Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <tr class="clickable-row" data-href="{% url 'history' %}">
+                            <td>
+                                <i class="ti-heart"></i>
+                                {{ activity.disease_name|default:"Health Check" }}
+                            </td>
+                            <td>
+                                <span class="result-badge 
+                                        {% if activity.result == 'Negative' or activity.result == 'Normal' or activity.result == 'Low Risk' %}success
+                                        {% elif activity.result == 'Positive' or activity.result == 'High Risk' %}danger
+                                        {% else %}warning{% endif %}">
+                                    <i class="ti-check"></i>
+                                    {{ activity.result|default:"Pending" }}
+                                </span>
+                            </td>
+                            <td><i class="ti-time"></i> {{ activity.date|date:"d M Y" }}</td>
+                            <td>
+                                <span
+                                    class="status-badge {% if activity.status == 'Completed' %}completed{% else %}pending{% endif %}">
+                                    <i
+                                        class="{% if activity.status == 'Completed' %}ti-check-box{% else %}ti-alarm-clock{% endif %}"></i>
+                                    {{ activity.status|default:"Pending" }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'history' %}" class="view-btn">
+                                    View Details <i class="ti-arrow-right"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="ti-folder"></i> No activity yet. Start your first diagnosis!
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========== 4. SMART ALERTS SECTION (Improved CTA) ========== -->
+        {% if alerts %}
+        <div class="alerts-panel">
+            <h4 class="panel-title">⚠️ Important Alerts</h4>
+            {% for alert in alerts %}
+            <div class="alert-card {{ alert.type }}">
+                <div class="alert-icon">
+                    <i class="{% if alert.type == 'warning' %}ti-alert{% else %}ti-info-alt{% endif %}"></i>
+                </div>
+                <div class="alert-content">
+                    <strong>{{ alert.title }}</strong>
+                    <p>{{ alert.message }}</p>
+                </div>
+                {% if alert.type == 'warning' %}
+                <a href="{% url 'check_test' %}" class="alert-action">
+                    Take Action → <i class="ti-arrow-right"></i>
+                </a>
+                {% elif alert.action_url %}
+                <a href="{{ alert.action_url }}" class="alert-action">
+                    Take Action → <i class="ti-arrow-right"></i>
+                </a>
+                {% else %}
+                <span class="alert-action disabled">✓ Noted</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ========== 5. LAST RESULT / HEALTH SUMMARY (Enhanced) ========== -->
+        {% if last_result %}
+        <div class="last-result-panel">
+            <h4 class="panel-title">🩺 Your Last Diagnosis</h4>
+            <div class="result-summary">
+                <div class="result-icon">
+                    <i class="ti-medical"></i>
+                </div>
+                <div class="result-details">
+                    <h5>{{ last_result.disease_name|default:"Health Assessment" }}</h5>
+                    <p class="result-desc">{{ last_result.description|default:"Your last health check result" }}</p>
+                    <div class="result-meta">
+                        <span class="date"><i class="ti-calendar"></i> {{ last_result.date|date:"d M Y, h:i A" }}</span>
+                        <span class="confidence" id="confidenceScore">
+                            <i class="ti-stats-up"></i> Confidence: {{ last_result.confidence|default:"85" }}%
+                        </span>
+                    </div>
+                    <!-- Progress bar for confidence visualization -->
+                    <div class="confidence-bar">
+                        <div class="confidence-progress" style="width: {{ last_result.confidence|default:85 }}%;"></div>
+                    </div>
+                </div>
+                <div class="result-status {{ last_result.result_class|default:'success' }}">
+                    <i class="ti-check"></i> {{ last_result.result|default:"Normal" }}
+                </div>
+            </div>
+            <div class="result-action text-right mt-3">
+                <a href="{% url 'history' %}" class="view-full-btn">
+                    View Full Report <i class="ti-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- Enhanced Dashboard CSS -->
+<style>
+    /* ========== UNIFIED CARD DESIGN ========== */
+    .stats-row {
+        margin-bottom: 25px;
+    }
+
+    .stat-card,
+    .quick-actions-panel,
+    .recent-activity-panel,
+    .alerts-panel,
+    .last-result-panel {
+        background: white;
+        border-radius: 24px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        border-left: 4px solid #0065e1;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card.completed {
+        border-left-color: #27ae60;
+    }
+
+    .stat-card.pending {
+        border-left-color: #f39c12;
+    }
+
+    .stat-icon i {
+        font-size: 42px;
+        color: #0065e1;
+    }
+
+    .stat-card.completed .stat-icon i {
+        color: #27ae60;
+    }
+
+    .stat-card.pending .stat-icon i {
+        color: #f39c12;
+    }
+
+    .stat-info h3 {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .stat-info p {
+        margin: 0;
+        color: #7f8c8d;
+        font-size: 14px;
+    }
+
+    /* Quick Actions */
+    .quick-actions-panel,
+    .recent-activity-panel,
+    .alerts-panel,
+    .last-result-panel {
+        margin-bottom: 25px;
+    }
+
+    .panel-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #2c3e50;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #eef2f8;
+    }
+
+    .panel-title i {
+        margin-right: 8px;
+        color: #0065e1;
+    }
+
+    .action-card {
+        display: block;
+        background: #f8fafd;
+        border-radius: 20px;
+        padding: 20px;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid #eef2f8;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 101, 225, 0.12);
+        border-color: #0065e1;
+        text-decoration: none;
+    }
+
+    .action-card i {
+        font-size: 36px;
+        color: #0065e1;
+        margin-bottom: 12px;
+        display: inline-block;
+    }
+
+    .action-card h5 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2c3e50;
+    }
+
+    .action-card p {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin: 0;
+    }
+
+    /* Activity Table */
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .activity-table th {
+        text-align: left;
+        padding: 14px 12px;
+        background: #f8fafd;
+        font-weight: 600;
+        color: #2c3e50;
+        border-bottom: 1px solid #eef2f8;
+    }
+
+    .activity-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #f0f2f5;
+        color: #5a6e7f;
+        vertical-align: middle;
+    }
+
+    .clickable-row {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .clickable-row:hover {
+        background: #f8fafd;
+    }
+
+    .result-badge,
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .result-badge i,
+    .status-badge i {
+        font-size: 11px;
+    }
+
+    .result-badge.success,
+    .status-badge.completed {
+        background: #e8f8f5;
+        color: #27ae60;
+    }
+
+    .result-badge.danger {
+        background: #fdedec;
+        color: #e74c3c;
+    }
+
+    .result-badge.warning {
+        background: #fef9e7;
+        color: #f39c12;
+    }
+
+    .status-badge.pending {
+        background: #fff8e7;
+        color: #f39c12;
+    }
+
+    .view-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: #eef3fe;
+        color: #0065e1;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .view-btn:hover {
+        background: #0065e1;
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Alert Cards */
+    .alert-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 16px 20px;
+        border-radius: 20px;
+        margin-bottom: 12px;
+        background: #fff9e6;
+        border-left: 4px solid #f39c12;
+        transition: transform 0.2s;
+    }
+
+    .alert-card:hover {
+        transform: translateX(4px);
+    }
+
+    .alert-card.warning {
+        background: #fff4e5;
+        border-left-color: #e67e22;
+    }
+
+    .alert-card.info {
+        background: #e8f4fd;
+        border-left-color: #3498db;
+    }
+
+    .alert-icon i {
+        font-size: 28px;
+        color: #f39c12;
+    }
+
+    .alert-card.warning .alert-icon i {
+        color: #e67e22;
+    }
+
+    .alert-card.info .alert-icon i {
+        color: #3498db;
+    }
+
+    .alert-content {
+        flex: 1;
+    }
+
+    .alert-content strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #2c3e50;
+    }
+
+    .alert-content p {
+        margin: 0;
+        font-size: 13px;
+        color: #5a6e7f;
+    }
+
+    .alert-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #e67e22;
+        color: white;
+        padding: 8px 18px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .alert-action:hover {
+        background: #d35400;
+        color: white;
+        text-decoration: none;
+        transform: scale(1.02);
+    }
+
+    .alert-action.disabled {
+        background: #bdc3c7;
+        cursor: default;
+    }
+
+    /* Last Result Summary */
+    .result-summary {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        flex-wrap: wrap;
+    }
+
+    .result-icon i {
+        font-size: 52px;
+        color: #0065e1;
+        background: linear-gradient(135deg, #eef3fe 0%, #e0edfc 100%);
+        width: 90px;
+        height: 90px;
+        line-height: 90px;
+        text-align: center;
+        border-radius: 50%;
+    }
+
+    .result-details {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .result-details h5 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #2c3e50;
+    }
+
+    .result-desc {
+        font-size: 13px;
+        color: #7f8c8d;
+        margin-bottom: 10px;
+    }
+
+    .result-meta {
+        display: flex;
+        gap: 25px;
+        font-size: 12px;
+        color: #95a5a6;
+        flex-wrap: wrap;
+    }
+
+    .result-meta i {
+        margin-right: 5px;
+    }
+
+    /* Confidence Progress Bar */
+    .confidence-bar {
+        margin-top: 12px;
+        background: #ecf0f1;
+        border-radius: 10px;
+        height: 6px;
+        overflow: hidden;
+    }
+
+    .confidence-progress {
+        background: linear-gradient(90deg, #0065e1, #3498db);
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    .result-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 24px;
+        border-radius: 40px;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .result-status.success {
+        background: #e8f8f5;
+        color: #27ae60;
+    }
+
+    .result-status.warning {
+        background: #fef9e7;
+        color: #f39c12;
+    }
+
+    .result-status.danger {
+        background: #fdedec;
+        color: #e74c3c;
+    }
+
+    .result-action {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eef2f8;
+    }
+
+    .view-full-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #0065e1;
+        font-weight: 600;
+        text-decoration: none;
+        transition: gap 0.2s;
+    }
+
+    .view-full-btn:hover {
+        gap: 12px;
+        text-decoration: none;
+        color: #004bb5;
+    }
+
+    /* Confidence animation */
+    #confidenceScore {
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .result-summary {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .result-meta {
+            justify-content: center;
+        }
+
+        .action-card {
+            padding: 15px;
+        }
+
+        .stat-card {
+            padding: 15px;
+        }
+
+        .stat-icon i {
+            font-size: 32px;
+        }
+
+        .stat-info h3 {
+            font-size: 24px;
+        }
+
+        .alert-card {
+            flex-wrap: wrap;
+        }
+
+        .alert-action {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .activity-table th,
+        .activity-table td {
+            padding: 10px 8px;
+            font-size: 12px;
+        }
+
+        .view-btn {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+    }
+
+    /* Cleaner background for dashboard only */
+    .main-content {
+        background-image: none !important;
+        background: #f4f8fb;
+    }
+</style>
+
+<!-- Dashboard JS with enhanced features -->
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Animate confidence score counting effect
+        const confidenceEl = document.getElementById('confidenceScore');
+        if (confidenceEl) {
+            const match = confidenceEl.innerText.match(/(\d+)%/);
+            if (match) {
+                let target = parseInt(match[1]);
+                let current = 0;
+                let step = Math.ceil(target / 30);
+                let interval = setInterval(function () {
+                    current += step;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(interval);
+                    }
+                    confidenceEl.innerHTML = '<i class="ti-stats-up"></i> Confidence: ' + current + '%';
+                }, 20);
+            }
+        }
+
+        // Make table rows clickable
+        const clickableRows = document.querySelectorAll('.clickable-row');
+        clickableRows.forEach(row => {
+            row.addEventListener('click', function (e) {
+                // Don't trigger if clicking on the view button
+                if (e.target.classList.contains('view-btn') ||
+                    e.target.closest('.view-btn')) {
+                    return;
+                }
+                const href = this.getAttribute('data-href');
+                if (href && href !== '#') {
+                    window.location.href = href;
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

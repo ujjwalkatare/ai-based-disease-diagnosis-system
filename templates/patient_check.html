@@ -1,0 +1,1088 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Loading Overlay (Check Disease) -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+        <div class="spinner"></div>
+        <p>Analyzing symptoms...</p>
+        <small>AI is processing your data</small>
+    </div>
+</div>
+
+<!-- Save Report Popup -->
+<div class="loading-overlay" id="saveOverlay">
+    <div class="loading-box">
+        <div class="save-check-icon" id="saveCheckIcon">
+            <div class="spinner" id="saveSpinner"></div>
+            <div class="check-mark" id="checkMark" style="display:none;">✔</div>
+        </div>
+        <p id="savePopupText">Saving report...</p>
+        <small id="savePopupSub">Please wait</small>
+    </div>
+</div>
+
+<div class="dashboard-container">
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-brand">
+                <img src="{% static 'img/favicon.png' %}" alt="logo">
+                <h3>AI Healthcare</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'dashboard' %}"><i class="ti-dashboard"></i> Dashboard</a></li>
+                <li><a href="{% url 'profile' %}"><i class="ti-user"></i> Profile</a></li>
+                <li class="active"><a href="{% url 'patient_check' %}"><i class="ti-heart-broken"></i> Patient Check</a>
+                </li>
+                <li><a href="{% url 'check_test' %}"><i class="ti-pulse"></i> Check Test</a></li>
+                <li><a href="{% url 'history' %}"><i class="ti-time"></i> History</a></li>
+                <li><a href="{% url 'analytics' %}"><i class="ti-bar-chart"></i> Analytics</a></li>
+            </ul>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="two-column-layout">
+
+            <!-- ================================================================
+               LEFT COLUMN – UPGRADED SYMPTOM SELECTION
+            ================================================================ -->
+            <div class="left-column">
+                <div class="content-box">
+                    <h2 class="welcome_text">🩺 Symptom Checker</h2>
+                    <p class="welcome-sub">Tell us what you're experiencing – we'll help you understand possible causes.
+                    </p>
+
+                    <div class="symptom-counter" id="symptomCounter">
+                        <span class="counter-number" id="counterNum">0</span> symptom(s) selected
+                    </div>
+
+                    <form method="POST" id="symptomForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="check">
+
+                        <!-- GROUPED SYMPTOMS -->
+                        <div class="symptom-groups">
+
+                            <!-- 🟢 General Symptoms -->
+                            <div class="symptom-group">
+                                <div class="group-header"><i class="fa fa-stethoscope"></i> General</div>
+                                <div class="group-grid">
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms" value="fever">
+                                        <span>🌡️ Fever</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms" value="fatigue">
+                                        <span>😴 Fatigue</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="loss_of_appetite"> <span>🍽️ Loss of Appetite</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms" value="chills">
+                                        <span>🥶 Chills</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms" value="sweating">
+                                        <span>💦 Sweating</span></label>
+                                </div>
+                            </div>
+
+                            <!-- 🔵 Respiratory -->
+                            <div class="symptom-group">
+                                <div class="group-header"><i class="fa fa-lungs"></i> Respiratory</div>
+                                <div class="group-grid">
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms" value="cough">
+                                        <span>🤧 Cough</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="difficulty_breathing"> <span>😮‍💨 Breathing
+                                            Difficulty</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="chest_pain"> <span>❤️ Chest Pain</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="shortness_of_breath"> <span>🌬️ Shortness of Breath</span></label>
+                                </div>
+                            </div>
+
+                            <!-- 🟡 Digestive -->
+                            <div class="symptom-group">
+                                <div class="group-header"><i class="fa fa-apple-alt"></i> Digestive</div>
+                                <div class="group-grid">
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms" value="nausea">
+                                        <span>🤢 Nausea</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms" value="vomiting">
+                                        <span>🤮 Vomiting</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="abdominal_pain"> <span>🫁 Abdominal Pain</span></label>
+                                </div>
+                            </div>
+
+                            <!-- 🔴 Neurological -->
+                            <div class="symptom-group">
+                                <div class="group-header"><i class="fa fa-brain"></i> Neurological</div>
+                                <div class="group-grid">
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms" value="headache">
+                                        <span>🤕 Headache</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="dizziness"> <span>😵 Dizziness</span></label>
+                                </div>
+                            </div>
+
+                            <!-- 🟣 Metabolic (Diabetes) -->
+                            <div class="symptom-group">
+                                <div class="group-header"><i class="fa fa-tint"></i> Metabolic</div>
+                                <div class="group-grid">
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="frequent_urination"> <span>🚽 Frequent Urination</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="increased_thirst"> <span>💧 Increased Thirst</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="blurred_vision"> <span>👁️ Blurred Vision</span></label>
+                                </div>
+                            </div>
+
+                            <!-- 🟤 Circulatory -->
+                            <div class="symptom-group">
+                                <div class="group-header"><i class="fa fa-heartbeat"></i> Circulatory</div>
+                                <div class="group-grid">
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="swelling_legs"> <span>🦵 Swelling in Legs</span></label>
+                                </div>
+                            </div>
+
+                            <!-- 🟠 Liver -->
+                            <div class="symptom-group">
+                                <div class="group-header"><i class="fa fa-filter"></i> Liver</div>
+                                <div class="group-grid">
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="yellowing_skin"> <span>🟡 Yellowing Skin</span></label>
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="yellowing_eyes"> <span>👀 Yellowing Eyes</span></label>
+                                </div>
+                            </div>
+
+                            <!-- 💪 Others (muscle pain) -->
+                            <div class="symptom-group">
+                                <div class="group-header"><i class="fa fa-hand-paper"></i> Muscular</div>
+                                <div class="group-grid">
+                                    <label class="symptom-card"><input type="checkbox" name="symptoms"
+                                            value="muscle_pain"> <span>💪 Muscle Pain</span></label>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="button-group">
+                            <button type="submit" class="btn_2 check-btn" id="checkBtn">
+                                🔍 Analyze Symptoms
+                            </button>
+                            <button type="button" class="btn_2 clear-btn" id="clearBtn">
+                                🗑️ Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ================================================================
+               RIGHT COLUMN – UPGRADED AI RESULT PANEL
+            ================================================================ -->
+            <div class="right-column">
+
+                {% if result %}
+                <div class="result-panel">
+
+                    <!-- 1. Selected Symptoms (tags) -->
+                    <div class="result-section selected-symptoms">
+                        <h4><i class="ti-check-box"></i> You selected</h4>
+                        <div class="symptoms-tags">
+                            {% for symptom in matched_symptoms %}
+                            <span class="symptom-tag">✓ {{ symptom }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 2. WHY THIS CONDITION (Explainable AI) -->
+                    <div class="result-section why-explanation">
+                        <h4><i class="ti-light-bulb"></i> Why this condition is suggested</h4>
+                        <div class="why-content">
+                            <ul class="matched-list">
+                                {% for symptom in matched_symptoms|slice:":5" %}
+                                <li>• {{ symptom }} →
+                                    {% if symptom == "fever" %}common sign of infection
+                                    {% elif symptom == "cough" %}often linked to respiratory illness
+                                    {% elif symptom == "headache" %}frequent in viral/fever conditions
+                                    {% elif symptom == "fatigue" %}body's response to fighting disease
+                                    {% elif symptom == "nausea" %}digestive system reaction
+                                    {% elif symptom == "difficulty_breathing" %}key indicator for pneumonia/respiratory
+                                    issues
+                                    {% else %}associated with {{ result }}
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% if matched_symptoms|length > 5 %}
+                            <p class="more-indicators">+ {{ matched_symptoms|length|add:"-5" }} more symptoms</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 3. SYMPTOM CONNECTION (New) -->
+                    <div class="result-section symptom-connection">
+                        <h4><i class="ti-link"></i> How your symptoms are connected</h4>
+                        <div class="connection-text">
+                            <p>
+                                {% if "fever" in matched_symptoms and "headache" in matched_symptoms %}
+                                <strong>Fever + Headache</strong> → strong infection signal (body fighting
+                                pathogen).<br>
+                                {% endif %}
+                                {% if "cough" in matched_symptoms and "difficulty_breathing" in matched_symptoms %}
+                                <strong>Cough + Breathing difficulty</strong> → suggests possible lung involvement.<br>
+                                {% endif %}
+                                {% if "nausea" in matched_symptoms and "vomiting" in matched_symptoms %}
+                                <strong>Nausea + Vomiting</strong> → digestive system reacting to illness or toxin.<br>
+                                {% endif %}
+                                {% if "fatigue" in matched_symptoms %}
+                                <strong>Fatigue</strong> → your body is using energy to fight the condition.<br>
+                                {% endif %}
+                                {% if not "fever" in matched_symptoms and not "cough" in matched_symptoms %}
+                                Your selected symptoms form a pattern that aligns with {{ result }}.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 4. DIAGNOSIS RESULT (existing card) -->
+                    <div class="result-section prediction-result">
+                        <h4><i class="ti-medical"></i> Diagnosis Result</h4>
+                        <div class="disease-card">
+                            <div class="disease-icon-wrapper">
+                                <img src="{% static 'img/diseases/' %}{{ result|lower }}.png" alt="{{ result }}"
+                                    class="disease-icon" onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                            </div>
+                            <div class="disease-info">
+                                <div class="disease-name">{{ result }}</div>
+                                {% if confidence >= 60 %}
+                                <span class="badge-most-likely">Most Likely</span>
+                                {% elif confidence >= 40 %}
+                                <span class="badge-moderate">Moderate Confidence</span>
+                                {% else %}
+                                <span class="badge-low-confidence">Low Confidence</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="confidence-meter">
+                            <div class="confidence-label">
+                                <span>Confidence Score</span>
+                                <span class="confidence-value">{{ confidence }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="confidenceFill" style="width: 0%;"
+                                    data-target="{{ confidence }}"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. RISK LEVEL (New) -->
+                    <div class="result-section risk-level">
+                        <h4><i class="ti-alert"></i> Risk Level</h4>
+                        {% if severity == "high" or confidence > 70 %}
+                        <div class="risk-badge high-risk">🔴 High Risk – Seek medical attention</div>
+                        {% elif severity == "medium" or confidence > 40 %}
+                        <div class="risk-badge medium-risk">🟡 Moderate Risk – Monitor symptoms</div>
+                        {% else %}
+                        <div class="risk-badge low-risk">🟢 Low Risk – Self-care likely sufficient</div>
+                        {% endif %}
+                        <p class="risk-note">Based on symptom severity and AI confidence.</p>
+                    </div>
+
+                    <!-- 6. WHAT'S HAPPENING IN YOUR BODY (New) -->
+                    <div class="result-section body-explanation">
+                        <h4><i class="ti-eye"></i> What's happening inside your body</h4>
+                        <div class="body-text">
+                            {% if result == "Malaria" %}
+                            <p>Parasites are multiplying in your red blood cells, causing cycles of fever and chills as
+                                your immune system fights back.</p>
+                            {% elif result == "Diabetes" %}
+                            <p>Your body isn't producing enough insulin or can't use it well, leading to high blood
+                                sugar that affects many organs.</p>
+                            {% elif result == "Pneumonia" %}
+                            <p>Your lung air sacs (alveoli) fill with fluid, making it hard to breathe and causing cough
+                                with phlegm.</p>
+                            {% elif result == "Heart Disease" %}
+                            <p>Blood vessels may be narrowed or blocked, reducing oxygen to your heart muscle – chest
+                                pain is a warning signal.</p>
+                            {% elif result == "Kidney Disease" %}
+                            <p>Your kidneys are struggling to filter waste, leading to fluid retention and fatigue.</p>
+                            {% elif result == "Liver Disease" %}
+                            <p>Inflammation or scarring affects your liver's ability to detoxify blood and produce
+                                essential proteins.</p>
+                            {% else %}
+                            <p>Your body is responding to an underlying condition, triggering the symptoms you've
+                                selected. AI analysis suggests {{ result }} as a potential cause.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 7. RECOMMENDED TEST -->
+                    {% if recommended_test %}
+                    <div class="result-section recommended-test">
+                        <h4><i class="ti-flask"></i> Recommended Test</h4>
+                        <div class="test-card">
+                            <i class="ti-medical"></i>
+                            <div>
+                                <strong>{{ recommended_test }}</strong>
+                                <p>Helps confirm diagnosis and guide treatment</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 8. ABOUT THIS CONDITION (improved wording) -->
+                    {% if description %}
+                    <div class="result-section description-box">
+                        <h4><i class="ti-info-alt"></i> About this condition</h4>
+                        <div class="description-content">
+                            <p>{{ description }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 9. AI MEDICAL EXPLANATION (structured) -->
+                    {% if gemini_response %}
+                    <div class="result-section ai-explanation">
+                        <h4><i class="ti-crown"></i> AI Medical Explanation</h4>
+                        <div class="ai-content">
+                            {% if confidence < 40 %} <div class="ai-low-confidence-note">
+                                <strong>📋 Low confidence – analysis based on available symptoms:</strong>
+                        </div>
+                        {% endif %}
+                        {{ gemini_response|linebreaks }}
+                        <div class="ai-structured">
+                            <p><strong>⚕️ When to see a doctor:</strong> If symptoms worsen, persist beyond 3 days, or
+                                include high fever (>103°F / 39.5°C), severe chest pain, or difficulty breathing.</p>
+                            <p><strong>🛡️ Precautions:</strong> Rest, stay hydrated, monitor your temperature, and
+                                avoid self-medication without professional advice.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 10. ACTION BUTTONS -->
+                <div class="action-buttons">
+                    <button type="button" class="btn_2 save-btn" id="saveReportBtn">
+                        💾 Save Report
+                    </button>
+                    <a href="{% url 'patient_check' %}" class="btn_2 clear-result-btn">
+                        🗑️ Clear
+                    </a>
+                </div>
+
+            </div>
+            {% else %}
+
+            <!-- EMPTY STATE – UPGRADED MESSAGING -->
+            <div class="empty-panel">
+                <div class="empty-icon">
+                    <i class="ti-heart-broken pulse-icon"></i>
+                </div>
+                <h3>No Analysis Yet</h3>
+                <p>Select your symptoms from the left panel and click <strong>“Analyze Symptoms”</strong> to get a smart
+                    health assessment.</p>
+                <div class="feature-list">
+                    <div class="feature-item"><i class="ti-check"></i><span>Explainable AI reasoning</span></div>
+                    <div class="feature-item"><i class="ti-check"></i><span>Symptom connection insights</span></div>
+                    <div class="feature-item"><i class="ti-check"></i><span>Risk level & body explanation</span></div>
+                    <div class="feature-item"><i class="ti-check"></i><span>Personalized medical guidance</span></div>
+                </div>
+            </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+    /* ===== OVERLAYS (unchanged) ===== */
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading-overlay.active {
+        display: flex;
+    }
+
+    .loading-box {
+        background: white;
+        border-radius: 20px;
+        padding: 36px 48px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        min-width: 220px;
+    }
+
+    .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #eef2f8;
+        border-top-color: #0065e1;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 16px auto;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .check-mark {
+        width: 48px;
+        height: 48px;
+        background: #27ae60;
+        border-radius: 50%;
+        color: white;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px auto;
+        animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* ===== LAYOUT ===== */
+    .two-column-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .left-column .content-box {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .right-column {
+        position: sticky;
+        top: 10px;
+        height: calc(100vh - 20px);
+        overflow: hidden;
+    }
+
+    .result-panel {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        border-radius: 20px;
+        padding: 20px 22px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        overflow-y: auto;
+    }
+
+    .result-panel::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .result-panel::-webkit-scrollbar-track {
+        background: #eef2f8;
+        border-radius: 4px;
+    }
+
+    .result-panel::-webkit-scrollbar-thumb {
+        background: #0065e1;
+        border-radius: 4px;
+    }
+
+    /* ===== RESULT SECTIONS ===== */
+    .result-section {
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eef2f8;
+    }
+
+    .result-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .result-section h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .result-section h4 i {
+        color: #0065e1;
+        font-size: 16px;
+    }
+
+    .symptoms-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .symptom-tag {
+        background: #eef3fe;
+        color: #0065e1;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .why-content ul,
+    .matched-list {
+        margin: 0;
+        padding-left: 20px;
+        font-size: 12px;
+        color: #5a6e7f;
+    }
+
+    .matched-list li {
+        margin-bottom: 4px;
+    }
+
+    .connection-text p {
+        font-size: 12px;
+        color: #5a6e7f;
+        margin: 0;
+    }
+
+    .disease-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: linear-gradient(135deg, #f0f7ff, #e8f0fe);
+        padding: 12px 16px;
+        border-radius: 16px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(0, 101, 225, 0.1);
+    }
+
+    .disease-icon {
+        width: 55px;
+        height: 55px;
+        object-fit: contain;
+        border-radius: 12px;
+    }
+
+    .disease-name {
+        font-size: 24px;
+        font-weight: 800;
+        color: #1a2a3a;
+        margin-bottom: 6px;
+    }
+
+    .badge-most-likely {
+        background: #0065e1;
+        color: white;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .badge-moderate {
+        background: #f39c12;
+        color: white;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .badge-low-confidence {
+        background: #e74c3c;
+        color: white;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .confidence-meter {
+        margin: 8px 0;
+    }
+
+    .confidence-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        margin-bottom: 4px;
+        color: #5a6e7f;
+    }
+
+    .confidence-value {
+        font-weight: 700;
+        color: #0065e1;
+    }
+
+    .progress-bar {
+        background: #eef2f8;
+        border-radius: 8px;
+        height: 6px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        background: linear-gradient(90deg, #0065e1, #3498db);
+        height: 100%;
+        border-radius: 8px;
+        transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .risk-badge {
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .high-risk {
+        background: #fdedec;
+        color: #c0392b;
+        border-left: 3px solid #e74c3c;
+    }
+
+    .medium-risk {
+        background: #fef9e7;
+        color: #d4a017;
+        border-left: 3px solid #f39c12;
+    }
+
+    .low-risk {
+        background: #e8f8f5;
+        color: #1e8449;
+        border-left: 3px solid #27ae60;
+    }
+
+    .risk-note {
+        font-size: 10px;
+        color: #7f8c8d;
+        margin: 4px 0 0 0;
+    }
+
+    .body-text {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #2c3e50;
+        background: #f8fafd;
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    .test-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        background: #f8fafd;
+        border-radius: 12px;
+        border-left: 3px solid #0065e1;
+    }
+
+    .description-content,
+    .ai-content {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #5a6e7f;
+    }
+
+    .ai-structured {
+        margin-top: 12px;
+        background: #fef9e7;
+        padding: 8px 12px;
+        border-radius: 12px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid #eef2f8;
+    }
+
+    .save-btn,
+    .clear-result-btn {
+        flex: 1;
+        text-align: center;
+        font-size: 12px;
+        padding: 8px 12px;
+        border-radius: 30px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .save-btn {
+        background: #0065e1 !important;
+        color: white !important;
+    }
+
+    .clear-result-btn {
+        background: #95a5a6 !important;
+        color: white !important;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-panel {
+        text-align: center;
+        padding: 40px 20px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .empty-icon i {
+        font-size: 48px;
+        color: #0065e1;
+        margin-bottom: 15px;
+        display: inline-block;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+
+        50% {
+            transform: scale(1.15);
+            opacity: 0.85;
+        }
+    }
+
+    .empty-panel h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: #2c3e50;
+    }
+
+    .empty-panel p {
+        font-size: 12px;
+        color: #7f8c8d;
+        margin-bottom: 20px;
+    }
+
+    .feature-list {
+        text-align: left;
+        max-width: 240px;
+        margin: 0 auto;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 0;
+        color: #5a6e7f;
+        font-size: 11px;
+    }
+
+    .feature-item i {
+        color: #27ae60;
+        font-size: 12px;
+    }
+
+    /* ===== SYMPTOM GROUPS ===== */
+    .symptom-groups {
+        margin: 20px 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .symptom-group {
+        background: #f9fbfd;
+        border-radius: 16px;
+        padding: 12px;
+        border: 1px solid #eef2f8;
+    }
+
+    .group-header {
+        font-weight: 700;
+        font-size: 13px;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .group-header i {
+        color: #0065e1;
+        font-size: 14px;
+    }
+
+    .group-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+    }
+
+    .symptom-card {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: white;
+        cursor: pointer;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+
+    .symptom-card:hover {
+        background: #eef3fe;
+        border-color: #0065e1;
+    }
+
+    .symptom-card input {
+        transform: scale(1.02);
+        cursor: pointer;
+    }
+
+    .symptom-card span {
+        font-size: 12px;
+    }
+
+    .symptom-card.is-checked {
+        background: #eef3fe !important;
+        border-color: #0065e1 !important;
+        box-shadow: 0 0 0 2px rgba(0, 101, 225, 0.15);
+    }
+
+    .symptom-card.is-checked span {
+        font-weight: 600;
+        color: #0065e1;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .check-btn {
+        background: #0065e1 !important;
+        color: white !important;
+        flex: 1;
+    }
+
+    .clear-btn {
+        background: #e74c3c !important;
+        color: white !important;
+        flex: 1;
+    }
+
+    .symptom-counter {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eef3fe;
+        border: 1px solid #c5d8fc;
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 12px;
+        color: #0065e1;
+        font-weight: 500;
+        margin-bottom: 14px;
+    }
+
+    @media (max-width: 992px) {
+        .two-column-layout {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .right-column {
+            position: static;
+            height: auto;
+            overflow: visible;
+        }
+
+        .result-panel {
+            height: auto;
+            max-height: none;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .group-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons,
+        .button-group {
+            flex-direction: column;
+        }
+
+        .disease-name {
+            font-size: 20px;
+        }
+
+        .disease-icon {
+            width: 45px;
+            height: 45px;
+        }
+    }
+</style>
+
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // SIDEBAR
+        const toggleBtn = document.getElementById("menuToggle");
+        const sidebar = document.getElementById("sidebar");
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener("click", () => sidebar.classList.toggle("show"));
+        }
+
+        // Symptom counter + highlight
+        const checkboxes = document.querySelectorAll('input[name="symptoms"]');
+        const counterNum = document.getElementById("counterNum");
+        function updateCounter() {
+            const count = document.querySelectorAll('input[name="symptoms"]:checked').length;
+            if (counterNum) counterNum.textContent = count;
+        }
+        checkboxes.forEach(cb => {
+            const card = cb.closest(".symptom-card");
+            if (cb.checked && card) card.classList.add("is-checked");
+            cb.addEventListener("change", function () {
+                if (card) card.classList.toggle("is-checked", this.checked);
+                updateCounter();
+            });
+        });
+        updateCounter();
+
+        // Clear button
+        const clearBtn = document.getElementById("clearBtn");
+        if (clearBtn) {
+            clearBtn.addEventListener("click", function () {
+                checkboxes.forEach(cb => {
+                    cb.checked = false;
+                    const card = cb.closest(".symptom-card");
+                    if (card) card.classList.remove("is-checked");
+                });
+                updateCounter();
+            });
+        }
+
+        // Loading overlay on form submit
+        const checkBtn = document.getElementById("checkBtn");
+        const symptomForm = document.getElementById("symptomForm");
+        const overlay = document.getElementById("loadingOverlay");
+        if (checkBtn && symptomForm && overlay) {
+            symptomForm.addEventListener("submit", function () {
+                checkBtn.disabled = true;
+                checkBtn.innerHTML = "⏳ Processing...";
+                overlay.classList.add("active");
+            });
+        }
+
+        // Animated confidence bar
+        const fill = document.getElementById("confidenceFill");
+        if (fill) {
+            const target = fill.getAttribute("data-target");
+            setTimeout(() => { fill.style.width = target + "%"; }, 300);
+        }
+
+        // Save report popup (unchanged logic)
+        const saveBtn = document.getElementById("saveReportBtn");
+        const saveOverlay = document.getElementById("saveOverlay");
+        const saveSpinner = document.getElementById("saveSpinner");
+        const checkMark = document.getElementById("checkMark");
+        const saveText = document.getElementById("savePopupText");
+        const saveSub = document.getElementById("savePopupSub");
+
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        if (saveBtn) {
+            saveBtn.addEventListener("click", function () {
+                saveBtn.disabled = true;
+                saveOverlay.classList.add("active");
+                saveSpinner.style.display = "block";
+                checkMark.style.display = "none";
+                saveText.textContent = "Saving report...";
+                saveSub.textContent = "Connecting to secure server";
+
+                fetch("{% url 'save_report' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCSRFToken(),
+                        "Content-Type": "application/json"
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            saveSpinner.style.display = "none";
+                            checkMark.style.display = "flex";
+                            saveText.textContent = data.message.includes("updated") ? "Report Refreshed!" : "Report Saved!";
+                            saveSub.textContent = data.message;
+                            saveBtn.innerHTML = "Saved ✅";
+                            saveBtn.style.background = "#27ae60";
+                            setTimeout(() => { saveOverlay.classList.remove("active"); }, 1800);
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        saveBtn.disabled = false;
+                        saveSpinner.style.display = "none";
+                        saveText.textContent = "Error!";
+                        saveSub.textContent = error.message || "Failed to save report";
+                        setTimeout(() => { saveOverlay.classList.remove("active"); }, 2000);
+                    });
+            });
+        }
+    });
+</script>
+
+{% endblock %}

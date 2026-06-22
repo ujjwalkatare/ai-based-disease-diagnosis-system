@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    /* ✅ Hide footer */
+    .footer-area {
+        display: none;
+    }
+
+    /* ✅ Hide Registration menu only on this page */
+    .navbar-nav .nav-item:nth-child(2) {
+        display: none;
+    }
+
+    /* ✅ Reduce spacing */
+    .registration_section {
+        padding-top: 100px !important;
+        padding-bottom: 40px !important;
+    }
+
+    /* ✅ Compact form */
+    .card-body {
+        padding: 25px !important;
+    }
+</style>
+
+<section class="registration_section">
+    <div class="container">
+
+        <div class="section_tittle text-center">
+            <h2>Patient Registration</h2>
+            <p>Create your account</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <input type="text" name="name" class="form-control" placeholder="Full Name"
+                                        required>
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <input type="email" name="email" class="form-control" placeholder="Email" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <input type="text" name="mobile" class="form-control"
+                                        placeholder="Mobile (10 digits)" pattern="[0-9]{10}" maxlength="10" required>
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <input type="text" name="aadhaar" class="form-control"
+                                        placeholder="Aadhaar (12 digits)" pattern="[0-9]{12}" maxlength="12" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+
+                                <!-- Password -->
+                                <div class="form-group col-md-6 position-relative">
+                                    <input type="password" name="password" id="password" class="form-control"
+                                        placeholder="Password (Test@123)" required>
+
+                                    <!-- 👁 Eye icon -->
+                                    <span onclick="togglePassword('password', this)"
+                                        style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer;">
+                                        👁
+                                    </span>
+                                </div>
+
+                                <!-- Confirm Password -->
+                                <div class="form-group col-md-6 position-relative">
+                                    <input type="password" name="confirm_password" id="confirm_password"
+                                        class="form-control" placeholder="Confirm Password" required>
+
+                                    <!-- 👁 Eye icon -->
+                                    <span onclick="togglePassword('confirm_password', this)"
+                                        style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer;">
+                                        👁
+                                    </span>
+                                </div>
+
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <input type="number" name="age" class="form-control" placeholder="Age">
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <select name="gender" class="form-control">
+                                        <option value="">Gender</option>
+                                        <option>Male</option>
+                                        <option>Female</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn_2 w-100">Register</button>
+
+                        </form>
+
+                        <div class="text-center mt-2">
+                            <small>Already have account?
+                                <a href="{% url 'login' %}">Login</a>
+                            </small>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+<script>
+    function togglePassword(fieldId, icon) {
+        let field = document.getElementById(fieldId);
+
+        if (field.type === "password") {
+            field.type = "text";
+            icon.innerHTML = "👁";
+        } else {
+            field.type = "password";
+            icon.innerHTML = "👁";
+        }
+    }
+</script>
+{% endblock %}

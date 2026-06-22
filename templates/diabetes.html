@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Wrap everything in dashboard-page to hide default header/footer -->
+<div class="dashboard-page">
+    <!-- Mobile menu toggle button (same logic as patient_check) -->
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i> Menu
+    </button>
+
+    <div class="dashboard-container">
+        <!-- Sidebar (exactly the same structure as patient_check) -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-top">
+                <div class="sidebar-brand">
+                    <img src="{% static 'img/favicon.png' %}" alt="logo">
+                    <h3>AI Healthcare</h3>
+                </div>
+
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{% url 'dashboard' %}">
+                            <i class="ti-dashboard"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'profile' %}">
+                            <i class="ti-user"></i> Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'patient_check' %}">
+                            <i class="ti-heart-broken"></i> Patient Check
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="{% url 'check_test' %}">
+                            <i class="ti-pulse"></i> Check Test
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'history' %}">
+                            <i class="ti-time"></i> History
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-bottom">
+                <a href="{% url 'logout' %}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content (layout handled by dashboard.css) -->
+        <div class="main-content">
+            <!-- Page Header with Diabetes icon -->
+            <div class="page-header">
+                <div class="header-icon">
+                    <img src="{% static 'img/diseases/diabetes.png' %}" alt="Diabetes"
+                         onerror="this.src='{% static 'img/diseases/default.png' %}'">
+                </div>
+                <div class="header-text">
+                    <h2 class="welcome_text">Diabetes Prediction</h2>
+                    <p class="welcome-sub">Enter Patient Medical Details for AI Analysis</p>
+                </div>
+            </div>
+
+            <!-- Main Form Card -->
+            <div class="form-container">
+                <div class="dashboard_card form-card">
+
+                    <!-- Result Section (shown after prediction) -->
+                    {% if result %}
+                    <div class="result-section">
+                        <div class="result-icon {% if result == 'Positive' %}result-positive{% else %}result-negative{% endif %}">
+                            {% if result == "Positive" %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {% else %}
+                            <i class="fas fa-check-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div class="result-text">
+                            <h3>Prediction Result</h3>
+                            <div class="result-status {% if result == 'Positive' %}status-positive{% else %}status-negative{% endif %}">
+                                {{ result }}
+                            </div>
+                            {% if confidence %}
+                            <div class="confidence-meter">
+                                <div class="confidence-label">
+                                    <span>Confidence Score</span>
+                                    <span class="confidence-value">{{ confidence }}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ confidence }}%;"></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <!-- Left Column -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label><i class="fas fa-female"></i> Pregnancies</label>
+                                    <input type="number" name="preg" class="form-control"
+                                           placeholder="Number of pregnancies" required>
+                                    <small class="form-hint">Number of times pregnant</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fas fa-tint"></i> Glucose</label>
+                                    <input type="number" name="glucose" class="form-control"
+                                           placeholder="Glucose level" required>
+                                    <small class="form-hint">mg/dL - Normal: 70-99</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fas fa-heart"></i> Blood Pressure</label>
+                                    <input type="number" name="bp" class="form-control"
+                                           placeholder="Blood pressure" required>
+                                    <small class="form-hint">mm/Hg - Normal: &lt; 120/80</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fas fa-layer-group"></i> Skin Thickness</label>
+                                    <input type="number" name="skin" class="form-control"
+                                           placeholder="Skin thickness" required>
+                                    <small class="form-hint">Triceps skin fold thickness (mm)</small>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label><i class="fas fa-syringe"></i> Insulin</label>
+                                    <input type="number" name="insulin" class="form-control"
+                                           placeholder="Insulin level" required>
+                                    <small class="form-hint">mu U/ml - 2-hour serum insulin</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fas fa-weight-scale"></i> BMI</label>
+                                    <input type="text" name="bmi" class="form-control"
+                                           placeholder="Body Mass Index" required>
+                                    <small class="form-hint">Weight(kg) / Height(m)² - Normal: 18.5-24.9</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fas fa-chart-line"></i> Diabetes Pedigree Function</label>
+                                    <input type="text" name="dpf" class="form-control"
+                                           placeholder="DPF value" required>
+                                    <small class="form-hint">Genetic risk factor (0.08-2.42)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fas fa-calendar-alt"></i> Age</label>
+                                    <input type="number" name="age" class="form-control"
+                                           placeholder="Patient age" required>
+                                    <small class="form-hint">Years - Higher risk after 45</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button class="btn-predict"><i class="fas fa-chart-simple"></i> Predict Diabetes</button>
+                        </div>
+                    </form>
+
+                    <!-- AI Explanation Section -->
+                    {% if explanation %}
+                    <div class="ai-explanation-section">
+                        <div class="ai-header">
+                            <i class="fas fa-robot"></i>
+                            <h4>AI Medical Analysis</h4>
+                        </div>
+                        <div class="ai-content">
+                            {{ explanation|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= DIABETES‑SPECIFIC STYLES ================= -->
+<!-- These styles only customise the diabetes form / result; layout is from dashboard.css -->
+<style>
+    /* Page Header with Icon */
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .header-icon img {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+    }
+
+    /* Form Container */
+    .form-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+    }
+
+    .form-card {
+        max-width: 800px;
+        width: 100%;
+        background: white;
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Result Section */
+    .result-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: linear-gradient(135deg, #f8fafd 0%, #f0f4f9 100%);
+        padding: 20px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+    }
+
+    .result-icon {
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 36px;
+    }
+
+    .result-positive {
+        background: #fdedec;
+        color: #e74c3c;
+    }
+
+    .result-negative {
+        background: #e8f8f5;
+        color: #27ae60;
+    }
+
+    .result-text h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #7f8c8d;
+        margin: 0 0 5px 0;
+    }
+
+    .result-status {
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .status-positive {
+        color: #e74c3c;
+    }
+
+    .status-negative {
+        color: #27ae60;
+    }
+
+    /* Confidence Meter (reused from patient_check style) */
+    .confidence-meter {
+        margin-top: 12px;
+        min-width: 200px;
+    }
+
+    .confidence-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        margin-bottom: 4px;
+        color: #5a6e7f;
+    }
+
+    .confidence-value {
+        font-weight: 700;
+        color: #0065e1;
+    }
+
+    .progress-bar {
+        background: #eef2f8;
+        border-radius: 8px;
+        height: 6px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        background: linear-gradient(90deg, #0065e1, #3498db);
+        height: 100%;
+        border-radius: 8px;
+        transition: width 0.5s ease;
+    }
+
+    /* Form Groups */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-size: 14px;
+    }
+
+    .form-group label i {
+        color: #0065e1;
+        font-size: 16px;
+        width: 20px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #e0e6ed;
+        border-radius: 12px;
+        font-size: 14px;
+        transition: all 0.2s;
+        background: #f8fafd;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #0065e1;
+        box-shadow: 0 0 0 3px rgba(0, 101, 225, 0.1);
+        background: white;
+    }
+
+    .form-hint {
+        display: block;
+        font-size: 11px;
+        color: #95a5a6;
+        margin-top: 5px;
+    }
+
+    /* Predict Button */
+    .btn-predict {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #0065e1 0%, #0050b3 100%);
+        color: white;
+        border: none;
+        border-radius: 40px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-predict:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 101, 225, 0.3);
+    }
+
+    /* AI Explanation Section */
+    .ai-explanation-section {
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 1px solid #eef2f8;
+    }
+
+    .ai-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .ai-header i {
+        font-size: 24px;
+        color: #0065e1;
+    }
+
+    .ai-header h4 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .ai-content {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #5a6e7f;
+        background: #f8fafd;
+        padding: 15px;
+        border-radius: 16px;
+    }
+
+    /* Grid helpers (reused from patient_check) */
+    .row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .col-md-6 {
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .d-grid {
+        display: grid;
+    }
+
+    .mt-4 {
+        margin-top: 25px;
+    }
+
+    /* Responsive adjustments for diabetes page */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .result-section {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .welcome_text {
+            font-size: 24px;
+        }
+
+        .form-card {
+            padding: 20px;
+        }
+    }
+</style>
+
+<!-- Sidebar toggle uses dashboard.js, but we also provide a direct fallback -->
+<script>
+    (function() {
+        // Ensure sidebar toggle works even if dashboard.js loads late
+        const toggleBtn = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle('show');
+            });
+        }
+    })();
+</script>
+{% endblock %}

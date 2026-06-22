@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<script>document.body.classList.add('dashboard-page');</script>
+
+<button class="menu-toggle" id="menuToggle">
+    <i class="fa fa-bars"></i>
+</button>
+
+<div class="dashboard-container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-brand">
+                <img src="{% static 'img/favicon.png' %}" alt="logo">
+                <h3>AI Healthcare</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'dashboard' %}"><i class="ti-dashboard"></i> Dashboard</a></li>
+                <li><a href="{% url 'profile' %}"><i class="ti-user"></i> Profile</a></li>
+                <li><a href="{% url 'patient_check' %}"><i class="ti-heart-broken"></i> Patient Check</a></li>
+                <li><a href="{% url 'check_test' %}"><i class="ti-pulse"></i> Check Test</a></li>
+                <li><a href="{% url 'history' %}"><i class="ti-time"></i> History</a></li>
+                <li><a href="{% url 'analytics' %}"><i class="ti-bar-chart"></i> Analytics</a></li>
+            </ul>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="{% url 'logout' %}" class="logout-btn"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- Page Header -->
+        <div class="d-flex align-items-center mb-4" style="gap:16px;">
+            <div
+                style="width:52px;height:52px;background:#e8f4fd;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="ti-bar-chart" style="font-size:24px;color:#2c7da0;"></i>
+            </div>
+            <div>
+                <h2 style="font-size:26px;font-weight:700;color:#2c3e50;margin:0;">Analysis Result</h2>
+                <p style="margin:3px 0 0;font-size:14px;color:#5a6e7f;">AI-powered diagnostic breakdown</p>
+            </div>
+            <!-- Saved badge -->
+            <div style="margin-left:auto;">
+                <span
+                    style="background:#f0fdf4;border:1px solid #86efac;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:#16a34a;display:flex;align-items:center;gap:6px;">
+                    <i class="fa fa-check-circle"></i> Report Saved
+                </span>
+            </div>
+        </div>
+
+        <!-- ── RESULT SUMMARY CARD ── -->
+        <div
+            style="background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.08);padding:28px;margin-bottom:20px;">
+
+            <!-- Result badge -->
+            {% if final_result == "Positive" %}
+            <div
+                style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+                <span style="width:14px;height:14px;background:#ef4444;border-radius:50%;flex-shrink:0;"></span>
+                <div>
+                    <p style="margin:0;font-weight:700;color:#dc2626;font-size:16px;">High Risk — Positive Result</p>
+                    <p style="margin:3px 0 0;font-size:13px;color:#b91c1c;">{{ result }} — Signs detected. Please
+                        consult a doctor.</p>
+                </div>
+            </div>
+            {% elif final_result == "Negative" %}
+            <div
+                style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+                <span style="width:14px;height:14px;background:#22c55e;border-radius:50%;flex-shrink:0;"></span>
+                <div>
+                    <p style="margin:0;font-weight:700;color:#16a34a;font-size:16px;">Low Risk — Negative Result</p>
+                    <p style="margin:3px 0 0;font-size:13px;color:#15803d;">{{ result }} — No significant signs
+                        detected. Maintain healthy habits.</p>
+                </div>
+            </div>
+            {% else %}
+            <div
+                style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:14px 18px;margin-bottom:20px;">
+                <p style="margin:0;font-weight:600;color:#b45309;">Result: {{ result|default:"Pending" }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Stats row -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+                    <p
+                        style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 6px;">
+                        Diagnosis</p>
+                    <p
+                        style="font-size:22px;font-weight:800;margin:0;color:{% if final_result == 'Positive' %}#dc2626{% elif final_result == 'Negative' %}#16a34a{% else %}#f59e0b{% endif %};">
+                        {{ final_result|default:"PENDING" }}
+                    </p>
+                </div>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+                    <p
+                        style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 6px;">
+                        Confidence</p>
+                    {% if probability %}
+                    <p style="font-size:22px;font-weight:800;margin:0;color:#2c7da0;">{{ probability }}%</p>
+                    <div style="background:#e2e8f0;border-radius:999px;height:5px;margin-top:8px;overflow:hidden;">
+                        <div id="conf-bar" data-conf="{{ probability }}"
+                            style="height:100%;border-radius:999px;width:0;transition:width 1s ease 0.3s;background:{% if final_result == 'Positive' %}#ef4444{% else %}#22c55e{% endif %};">
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="font-size:14px;font-weight:500;margin:0;color:#94a3b8;">Not available</p>
+                    {% endif %}
+                </div>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+                    <p
+                        style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 6px;">
+                        Risk Level</p>
+                    {% if final_result == "Positive" %}
+                    <span
+                        style="background:#fef2f2;color:#dc2626;border-radius:6px;padding:4px 10px;font-size:13px;font-weight:700;">High</span>
+                    {% elif final_result == "Negative" %}
+                    <span
+                        style="background:#f0fdf4;color:#16a34a;border-radius:6px;padding:4px 10px;font-size:13px;font-weight:700;">Low</span>
+                    {% else %}
+                    <span
+                        style="background:#fffbeb;color:#b45309;border-radius:6px;padding:4px 10px;font-size:13px;font-weight:700;">Unknown</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Strong Disclaimer -->
+            <div
+                style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:14px 16px;display:flex;gap:10px;align-items:flex-start;">
+                <i class="fa fa-exclamation-triangle"
+                    style="color:#ea580c;margin-top:2px;flex-shrink:0;font-size:16px;"></i>
+                <div>
+                    <p style="font-size:13px;font-weight:700;color:#9a3412;margin:0 0 3px;">This is NOT a medical
+                        diagnosis</p>
+                    <p style="font-size:12px;color:#92400e;margin:0;line-height:1.6;">
+                        This AI result is for <strong>screening purposes only</strong>. Always consult a qualified
+                        healthcare professional for clinical diagnosis and treatment decisions. Do not self-medicate
+                        based on this result.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── AI RECOMMENDATION CARD ── -->
+        {% if ai_advice %}
+        <div
+            style="background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.08);padding:28px;margin-bottom:20px;">
+
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
+                <div
+                    style="width:40px;height:40px;background:#ede9fe;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa fa-brain" style="color:#7c3aed;font-size:18px;"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0;font-size:17px;font-weight:700;color:#1e293b;">AI Recommendation</h3>
+                    <p style="margin:2px 0 0;font-size:12px;color:#94a3b8;">Personalised guidance from AI — not a
+                        substitute for a doctor</p>
+                </div>
+            </div>
+
+            {{ ai_advice|json_script:"ai-advice-json" }}
+            <div id="ai-sections-container"></div>
+
+        </div>
+        {% endif %}
+
+        <!-- ── NEXT STEPS CARD ── -->
+        <div
+            style="background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.08);padding:24px;margin-bottom:20px;">
+            <h3
+                style="font-size:15px;font-weight:700;color:#1e293b;margin:0 0 16px;display:flex;align-items:center;gap:8px;">
+                <i class="fa fa-tasks" style="color:#2c7da0;"></i> Next Steps
+            </h3>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <div
+                    style="display:flex;align-items:center;gap:12px;background:#f0fdf4;border-radius:8px;padding:12px 16px;">
+                    <i class="fa fa-calendar-check" style="color:#16a34a;font-size:16px;"></i>
+                    <span style="font-size:13px;color:#15803d;font-weight:500;">Book a consultation with a qualified
+                        doctor</span>
+                </div>
+                <div
+                    style="display:flex;align-items:center;gap:12px;background:#eff6ff;border-radius:8px;padding:12px 16px;">
+                    <i class="fa fa-eye" style="color:#1d4ed8;font-size:16px;"></i>
+                    <span style="font-size:13px;color:#1e40af;font-weight:500;">Monitor your symptoms daily and note any
+                        changes</span>
+                </div>
+                <div
+                    style="display:flex;align-items:center;gap:12px;background:#faf5ff;border-radius:8px;padding:12px 16px;">
+                    <i class="fa fa-redo" style="color:#7c3aed;font-size:16px;"></i>
+                    <span style="font-size:13px;color:#6d28d9;font-weight:500;">Repeat this test after 7 days to track
+                        progress</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding-bottom:30px;">
+            <a href="{% url 'history' %}"
+                style="padding:11px 30px;font-weight:600;border-radius:8px;font-size:14px;background:#16a34a;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fa fa-check"></i> OK
+            </a>
+            <a href="{% url 'check_test' %}"
+                style="padding:11px 30px;font-weight:600;border-radius:8px;font-size:14px;border:1.5px solid #2c7da0;color:#2c7da0;background:transparent;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fa fa-redo"></i> Test Again
+            </a>
+            <a href="{% url 'dashboard' %}"
+                style="padding:11px 22px;font-weight:500;border-radius:8px;font-size:13px;border:1px solid #cbd5e1;color:#5a6e7f;background:transparent;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                <i class="ti-arrow-left"></i> Dashboard
+            </a>
+        </div>
+
+    </div><!-- /main-content -->
+</div><!-- /dashboard-container -->
+
+<style>
+    .menu-toggle {
+        display: none;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1000;
+        background: #2c7da0;
+        border: none;
+        color: white;
+        font-size: 20px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    @media (max-width:768px) {
+        .menu-toggle {
+            display: block;
+        }
+
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            position: fixed;
+            z-index: 1050;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            margin-left: 0 !important;
+            padding: 70px 15px 20px !important;
+        }
+    }
+
+    .ai-section-card {
+        border-radius: 10px;
+        margin-bottom: 12px;
+        overflow: hidden;
+        border: 1px solid transparent;
+    }
+
+    .ai-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 16px;
+        cursor: pointer;
+        user-select: none;
+        transition: opacity 0.15s;
+    }
+
+    .ai-section-header:hover {
+        opacity: 0.85;
+    }
+
+    .ai-section-body {
+        padding: 0 16px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease, padding 0.2s;
+    }
+
+    .ai-section-body.open {
+        max-height: 600px;
+        padding: 4px 16px 16px;
+    }
+
+    .ai-section-body ul {
+        margin: 8px 0 0;
+        padding-left: 18px;
+    }
+
+    .ai-section-body li {
+        font-size: 13.5px;
+        line-height: 1.75;
+        color: inherit;
+    }
+
+    .ai-section-body p {
+        font-size: 13.5px;
+        line-height: 1.75;
+        margin: 6px 0 0;
+        color: inherit;
+    }
+
+    .chevron {
+        font-size: 12px;
+        transition: transform 0.25s;
+    }
+
+    .chevron.open {
+        transform: rotate(180deg);
+    }
+</style>
+<script>
+    /* ── Confidence bar ── */
+    const bar = document.getElementById('conf-bar');
+    if (bar) {
+        const pct = parseFloat(bar.dataset.conf) || 0;
+        setTimeout(() => { bar.style.width = pct + '%'; }, 300);
+    }
+
+    /* ── Mobile sidebar ── */
+    const toggleBtn = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    if (toggleBtn && sidebar) {
+        toggleBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== toggleBtn) {
+                sidebar.classList.remove('open');
+            }
+        });
+    }
+
+    /* ── AI Section Parser & Renderer (Updated Version) ── */
+    (function () {
+        const container = document.getElementById('ai-sections-container');
+        const jsonEl = document.getElementById('ai-advice-json');
+        if (!jsonEl || !container) return;
+
+        let rawText = '';
+        try {
+            rawText = JSON.parse(jsonEl.textContent) || '';
+        } catch (e) {
+            console.error('AI parse error:', e);
+            return;
+        }
+
+        // Handle empty content
+        if (!rawText || rawText.trim().length < 10) {
+            container.innerHTML = '<p style="color:#94a3b8;font-size:13px;padding:10px;">No AI guidance available.</p>';
+            return;
+        }
+
+        const sectionDefs = [
+            { key: ['explanation', 'what this', 'about', 'what is'], icon: 'fa-info-circle', label: 'Explanation', bg: '#eff6ff', border: '#bfdbfe', textColor: '#1e40af', bodyColor: '#1e3a5f' },
+            { key: ['diet', 'food', 'eat', 'avoid', 'nutrition'], icon: 'fa-apple-alt', label: 'Diet', bg: '#f0fdf4', border: '#bbf7d0', textColor: '#166534', bodyColor: '#14532d' },
+            { key: ['exercise', 'activit', 'workout', 'physical'], icon: 'fa-running', label: 'Exercise', bg: '#faf5ff', border: '#e9d5ff', textColor: '#6d28d9', bodyColor: '#4c1d95' },
+            { key: ['precaution', 'safety', 'care', 'prevent'], icon: 'fa-shield-alt', label: 'Precautions', bg: '#fff7ed', border: '#fed7aa', textColor: '#c2410c', bodyColor: '#7c2d12' },
+            { key: ['medicine', 'medic', 'drug', 'tablet', 'treatment'], icon: 'fa-pills', label: 'Medicines', bg: '#fef2f2', border: '#fecaca', textColor: '#b91c1c', bodyColor: '#7f1d1d' },
+            { key: ['doctor', 'consult', 'when to see', 'seek', 'warning'], icon: 'fa-user-md', label: 'See a Doctor', bg: '#f0f9ff', border: '#bae6fd', textColor: '#0369a1', bodyColor: '#0c4a6e' },
+        ];
+
+        // ── Parse lines into section buckets ──
+        const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+        let buckets = {};
+        let currentKey = null;
+
+        lines.forEach(line => {
+            // Strip leading markdown symbols for matching
+            const clean = line.replace(/^[#*\-\d\.\s]+/, '').toLowerCase().trim();
+
+            // Heading logic: ends with colon OR is very short
+            const isHeading = clean.endsWith(':');
+            const matched = isHeading
+                ? sectionDefs.find(s => s.key.some(k => clean.includes(k)))
+                : null;
+
+            if (matched) {
+                currentKey = matched.label;
+                if (!buckets[currentKey]) buckets[currentKey] = [];
+            } else if (currentKey) {
+                // Strip markdown from content lines
+                const stripped = line.replace(/^[-*•]\s*/, '').replace(/\*\*/g, '').trim();
+                // Avoid pushing the heading itself into the list
+                if (stripped && stripped.toLowerCase() !== currentKey.toLowerCase()) {
+                    buckets[currentKey].push(stripped);
+                }
+            }
+        });
+
+        // ── Fallback: show raw text if no sections were parsed ──
+        if (Object.keys(buckets).length === 0) {
+            const fallback = document.createElement('div');
+            fallback.style.cssText = 'font-size:13.5px;line-height:1.9;color:#334155;white-space:pre-wrap;background:#f8fafc;border-radius:10px;padding:16px;';
+            fallback.textContent = rawText.replace(/\*\*/g, '').replace(/#{1,6}/g, '').trim();
+            container.appendChild(fallback);
+            return;
+        }
+
+        // ── Helper: Escape HTML to prevent injection ──
+        const escapeHtml = str => str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        // ── Render each matched section ──
+        sectionDefs.forEach((def, idx) => {
+            const items = buckets[def.label];
+            if (!items || items.length === 0) return;
+
+            let contentLines = [...items];
+            if (def.label === 'Medicines') {
+                contentLines.unshift('⚠ Do NOT take any medicine without consulting your doctor first.');
+            }
+
+            const bodyId = 'ai-body-' + idx;
+            const card = document.createElement('div');
+            card.className = 'ai-section-card';
+            card.style.cssText = `background:${def.bg};border-color:${def.border};margin-bottom:12px;border-width:1px;border-style:solid;border-radius:8px;overflow:hidden;`;
+
+            card.innerHTML = `
+                <div class="ai-section-header" onclick="toggleSection('${bodyId}', this)" style="cursor:pointer;padding:12px;display:flex;justify-content:space-between;align-items:center;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <i class="fa ${def.icon}" style="color:${def.textColor};font-size:15px;width:18px;text-align:center;"></i>
+                        <span style="font-weight:600;font-size:14px;color:${def.textColor};">${def.label}</span>
+                    </div>
+                    <i class="fa fa-chevron-down chevron open" style="color:${def.textColor};transition:transform 0.3s;"></i>
+                </div>
+                <div class="ai-section-body open" id="${bodyId}" style="color:${def.bodyColor};padding:0 12px 12px 12px;">
+                    <ul style="margin:0;padding-left:20px;font-size:13.5px;line-height:1.6;">
+                        ${contentLines.map(l => `<li style="margin-bottom:6px;">${escapeHtml(l)}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        /* Collapse/expand toggle function */
+        window.toggleSection = function (id, header) {
+            const body = document.getElementById(id);
+            const chevron = header.querySelector('.chevron');
+            if (!body) return;
+
+            if (body.classList.contains('open')) {
+                body.classList.remove('open');
+                body.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                body.classList.add('open');
+                body.style.display = 'block';
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        };
+    })();
+</script>
+
+{% endblock %}

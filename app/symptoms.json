@@ -1,0 +1,144 @@
+{
+  "diabetes": {
+    "name": "Diabetes",
+
+    "symptoms": [
+      { "name": "frequent_urination", "weight": 3 },
+      { "name": "increased_thirst", "weight": 3 },
+      { "name": "increased_hunger", "weight": 2 },
+      { "name": "fatigue", "weight": 2 },
+      { "name": "blurred_vision", "weight": 2 },
+      { "name": "slow_healing_wounds", "weight": 2 },
+      { "name": "weight_loss", "weight": 1 }
+    ],
+
+    "description": "A chronic condition that affects how the body processes blood sugar (glucose).",
+
+    "recommended_test": "Blood Sugar Test (Fasting / HbA1c)",
+
+    "severity": "medium",
+
+    "gemini_prompt": "Explain diabetes in simple terms, why these symptoms occur, precautions, and when to consult a doctor.",
+
+    "redirect_url": "diabetes_predict"
+  },
+
+  "heart_disease": {
+    "name": "Heart Disease",
+
+    "symptoms": [
+      { "name": "chest_pain", "weight": 3 },
+      { "name": "shortness_of_breath", "weight": 3 },
+      { "name": "fatigue", "weight": 2 },
+      { "name": "irregular_heartbeat", "weight": 2 },
+      { "name": "dizziness", "weight": 2 },
+      { "name": "swelling_legs", "weight": 1 }
+    ],
+
+    "description": "A condition affecting the heart and blood vessels.",
+
+    "recommended_test": "ECG / Stress Test",
+
+    "severity": "high",
+
+    "gemini_prompt": "Explain heart disease, risks of chest pain, lifestyle precautions, and when immediate medical help is needed.",
+
+    "redirect_url": "heart_predict"
+  },
+
+  "kidney_disease": {
+    "name": "Kidney Disease",
+
+    "symptoms": [
+      { "name": "swelling_legs", "weight": 3 },
+      { "name": "fatigue", "weight": 2 },
+      { "name": "nausea", "weight": 2 },
+      { "name": "vomiting", "weight": 2 },
+      { "name": "loss_of_appetite", "weight": 2 },
+      { "name": "frequent_urination", "weight": 1 },
+      { "name": "blood_in_urine", "weight": 3 }
+    ],
+
+    "description": "A condition where kidneys lose their ability to filter waste properly.",
+
+    "recommended_test": "Creatinine Test / Urine Test",
+
+    "severity": "high",
+
+    "gemini_prompt": "Explain kidney disease symptoms, causes, diet precautions, and when to consult a doctor.",
+
+    "redirect_url": "kidney_predict"
+  },
+
+  "liver_disease": {
+    "name": "Liver Disease",
+
+    "symptoms": [
+      { "name": "yellowing_skin", "weight": 3 },
+      { "name": "yellowing_eyes", "weight": 3 },
+      { "name": "abdominal_pain", "weight": 2 },
+      { "name": "swelling_abdomen", "weight": 2 },
+      { "name": "fatigue", "weight": 2 },
+      { "name": "nausea", "weight": 2 },
+      { "name": "dark_urine", "weight": 2 }
+    ],
+
+    "description": "A condition affecting liver function and detoxification.",
+
+    "recommended_test": "Liver Function Test (LFT)",
+
+    "severity": "high",
+
+    "gemini_prompt": "Explain liver disease, causes of jaundice, precautions, and when medical attention is required.",
+
+    "redirect_url": "liver_predict"
+  },
+
+  "malaria": {
+    "name": "Malaria",
+
+    "symptoms": [
+      { "name": "fever", "weight": 3 },
+      { "name": "chills", "weight": 3 },
+      { "name": "sweating", "weight": 2 },
+      { "name": "headache", "weight": 2 },
+      { "name": "nausea", "weight": 2 },
+      { "name": "vomiting", "weight": 2 },
+      { "name": "muscle_pain", "weight": 1 }
+    ],
+
+    "description": "A mosquito-borne infectious disease caused by parasites.",
+
+    "recommended_test": "CBC / Malaria Parasite Test",
+
+    "severity": "high",
+
+    "gemini_prompt": "Explain malaria symptoms, how it spreads, precautions, and when to seek urgent care.",
+
+    "redirect_url": "malaria"
+  },
+
+  "pneumonia": {
+    "name": "Pneumonia",
+
+    "symptoms": [
+      { "name": "cough", "weight": 3 },
+      { "name": "fever", "weight": 3 },
+      { "name": "difficulty_breathing", "weight": 3 },
+      { "name": "chest_pain", "weight": 2 },
+      { "name": "fatigue", "weight": 2 },
+      { "name": "sweating", "weight": 1 },
+      { "name": "loss_of_appetite", "weight": 1 }
+    ],
+
+    "description": "An infection that inflames the air sacs in one or both lungs.",
+
+    "recommended_test": "Chest X-ray",
+
+    "severity": "high",
+
+    "gemini_prompt": "Explain pneumonia, breathing risks, recovery steps, and when hospitalization is required.",
+
+    "redirect_url": "pneumonia"
+  }
+}

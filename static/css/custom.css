@@ -1,0 +1,117 @@
+/* Additional premium UI enhancements */
+.hero-badge {
+  background: rgba(0, 101, 225, 0.12);
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 40px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: #0065e1;
+  margin-bottom: 1rem;
+  letter-spacing: 0.3px;
+}
+.stats-card {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 1.8rem 1rem;
+  text-align: center;
+  box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08);
+  transition: all 0.25s ease;
+  border: 1px solid rgba(0, 101, 225, 0.08);
+}
+.stats-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 28px 35px -12px rgba(0, 101, 225, 0.15);
+  border-color: rgba(0, 101, 225, 0.2);
+}
+.stats-number {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #0065e1;
+  font-family: "Playfair Display", serif;
+  line-height: 1.2;
+}
+.disease-card {
+  background: white;
+  border-radius: 24px;
+  padding: 1.5rem 0.8rem;
+  text-align: center;
+  transition: 0.25s;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f2f5;
+  margin-bottom: 30px;
+}
+.disease-card i {
+  font-size: 2.5rem;
+  color: #0065e1;
+  background: #eef3fe;
+  width: 70px;
+  height: 70px;
+  line-height: 70px;
+  border-radius: 50%;
+  margin-bottom: 1.2rem;
+  display: inline-block;
+}
+.step-circle {
+  width: 58px;
+  height: 58px;
+  background: #0065e1;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.2rem;
+  box-shadow: 0 12px 18px -6px rgba(0, 101, 225, 0.3);
+}
+.testimonial-card {
+  background: #ffffff;
+  border-radius: 32px;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef2f8;
+}
+.btn-outline-light-custom {
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  background: transparent;
+  color: white;
+  padding: 10px 30px;
+  border-radius: 50px;
+  font-weight: 500;
+}
+.btn-outline-light-custom:hover {
+  background: white;
+  color: #0065e1;
+  border-color: white;
+}
+.feature-upgraded {
+  background: #f8fafd;
+  border-radius: 24px;
+  padding: 2rem 1.5rem;
+  transition: 0.2s;
+  height: 100%;
+}
+.feature-upgraded i {
+  font-size: 2rem;
+  color: #0065e1;
+  margin-bottom: 1rem;
+}
+.bg-soft-primary {
+  background: #eef3fe;
+}
+.text-primary-custom {
+  color: #0065e1;
+}
+.hero-cta-group .btn_2 {
+  margin-right: 15px;
+}
+@media (max-width: 768px) {
+  .stats-number {
+    font-size: 2rem;
+  }
+  .hero-cta-group .btn_2 {
+    margin-bottom: 12px;
+  }
+}

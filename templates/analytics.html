@@ -1,0 +1,623 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Mobile toggle (if needed) -->
+<button class="menu-toggle" id="menuToggle">
+    ☰ Menu
+</button>
+
+<div class="dashboard-container">
+    <!-- Sidebar - consistent with dashboard -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-brand">
+                <img src="{% static 'img/favicon.png' %}" alt="logo">
+                <h3>AI Healthcare</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="{% url 'dashboard' %}">
+                        <i class="ti-dashboard"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'profile' %}">
+                        <i class="ti-user"></i> Profile
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'patient_check' %}">
+                        <i class="ti-heart-broken"></i> Patient Check
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'check_test' %}">
+                        <i class="ti-pulse"></i> Check Test
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'history' %}">
+                        <i class="ti-time"></i> History
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="{% url 'analytics' %}">
+                        <i class="ti-bar-chart"></i> Analytics
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="content-box mb-4">
+            <h2 class="welcome_text">📊 Health Analytics</h2>
+            <p class="welcome-sub">Your comprehensive health data insights and trends</p>
+        </div>
+
+        <!-- ========== 1. OVERVIEW CARDS ========== -->
+        <div class="row stats-row">
+            <div class="col-md-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="ti-files"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ total_tests|default:"0" }}</h3>
+                        <p>Total Tests</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card completed">
+                    <div class="stat-icon">
+                        <i class="ti-check-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ positive_count|default:"0" }}</h3>
+                        <p>Positive Results</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card pending">
+                    <div class="stat-icon">
+                        <i class="ti-alarm-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ negative_count|default:"0" }}</h3>
+                        <p>Negative Results</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 2. HEALTH SCORE PANEL ========== -->
+        <div class="health-score-panel mb-4">
+            <h4 class="panel-title">💚 Your Health Score</h4>
+            <div class="score-container">
+                <div class="score-circle" data-score="{{ health_score|default:100 }}">
+                    <span class="score-number">{{ health_score|default:100 }}</span>
+                    <span class="score-max">/100</span>
+                </div>
+                <div class="score-details">
+                    <p class="score-message">
+                        {% if health_score >= 80 %}
+                            🌟 Excellent! You're maintaining good health.
+                        {% elif health_score >= 60 %}
+                            👍 Good! Keep up with regular checkups.
+                        {% elif health_score >= 40 %}
+                            ⚠️ Fair - Consider lifestyle improvements.
+                        {% else %}
+                            🩺 Needs attention - Consult a doctor regularly.
+                        {% endif %}
+                    </p>
+                    <div class="score-progress-bar">
+                        <div class="score-progress" style="width: {{ health_score|default:100 }}%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 3. CHARTS SECTION - 2x2 Grid ========== -->
+        <div class="charts-grid">
+            <!-- Disease Distribution Chart -->
+            <div class="chart-card">
+                <h4 class="panel-title">🦠 Disease Distribution</h4>
+                <div class="chart-container">
+                    <canvas id="diseaseChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Result Distribution Chart -->
+            <div class="chart-card">
+                <h4 class="panel-title">📈 Result Distribution</h4>
+                <div class="chart-container">
+                    <canvas id="resultChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Health Trend Chart -->
+            <div class="chart-card">
+                <h4 class="panel-title">📉 Health Trend (Last 10 Tests)</h4>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div class="chart-note">1 = Positive, 0 = Negative</div>
+            </div>
+
+            <!-- Model Accuracy Chart -->
+            <div class="chart-card">
+                <h4 class="panel-title">🤖 AI Model Accuracy</h4>
+                <div class="chart-container">
+                    <canvas id="modelChart"></canvas>
+                </div>
+                <div class="chart-note">Based on internal validation data</div>
+            </div>
+        </div>
+
+        <!-- ========== 4. RECENT ACTIVITY TABLE ========== -->
+        <div class="recent-activity-panel">
+            <h4 class="panel-title">📋 Recent Activity</h4>
+            <div class="table-responsive">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th><i class="ti-medical"></i> Disease / Test</th>
+                            <th><i class="ti-stats-up"></i> Result</th>
+                            <th><i class="ti-calendar"></i> Date</th>
+                            <th><i class="ti-control-forward"></i> Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent %}
+                            {% for r in recent %}
+                            <tr>
+                                <td><i class="ti-heart"></i> {{ r.disease_name|default:"Health Check" }}</td>
+                                <td>
+                                    <span class="result-badge 
+                                        {% if r.final_result == 'Positive' %}danger
+                                        {% elif r.final_result == 'Negative' %}success
+                                        {% else %}warning{% endif %}">
+                                        <i class="ti-check"></i>
+                                        {{ r.final_result|default:"Pending" }}
+                                    </span>
+                                </td>
+                                <td><i class="ti-time"></i> {{ r.created_at|date:"d M Y" }}</td>
+                                <td>
+                                    <span class="status-badge {% if r.final_result %}completed{% else %}pending{% endif %}">
+                                        <i class="{% if r.final_result %}ti-check-box{% else %}ti-alarm-clock{% endif %}"></i>
+                                        {% if r.final_result %}Completed{% else %}Pending{% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <i class="ti-folder"></i> No activity yet. Start your first diagnosis!
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== SAFE JSON DATA TRANSFER (json_script) ========== -->
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_values|json_script:"chart-values" }}
+{{ result_labels|json_script:"result-labels" }}
+{{ result_values|json_script:"result-values" }}
+{{ trend_labels|json_script:"trend-labels" }}
+{{ trend_values|json_script:"trend-values" }}
+{{ model_labels|json_script:"model-labels" }}
+{{ model_values|json_script:"model-values" }}
+
+<!-- Styles matching dashboard design -->
+<style>
+    /* ========== UNIFIED CARD DESIGN ========== */
+    .stats-row {
+        margin-bottom: 25px;
+    }
+
+    .stat-card,
+    .health-score-panel,
+    .chart-card,
+    .recent-activity-panel {
+        background: white;
+        border-radius: 24px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        border-left: 4px solid #0065e1;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card.completed {
+        border-left-color: #e74c3c;  /* Positive results */
+    }
+
+    .stat-card.pending {
+        border-left-color: #27ae60;  /* Negative results */
+    }
+
+    .stat-icon i {
+        font-size: 42px;
+        color: #0065e1;
+    }
+
+    .stat-card.completed .stat-icon i {
+        color: #e74c3c;
+    }
+
+    .stat-card.pending .stat-icon i {
+        color: #27ae60;
+    }
+
+    .stat-info h3 {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .stat-info p {
+        margin: 0;
+        color: #7f8c8d;
+        font-size: 14px;
+    }
+
+    .panel-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #2c3e50;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #eef2f8;
+    }
+
+    .panel-title i {
+        margin-right: 8px;
+        color: #0065e1;
+    }
+
+    /* Health Score Panel */
+    .health-score-panel {
+        margin-bottom: 25px;
+    }
+
+    .score-container {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .score-circle {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #eef3fe 0%, #e0edfc 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: 0 8px 20px rgba(0, 101, 225, 0.15);
+    }
+
+    .score-number {
+        font-size: 42px;
+        font-weight: 800;
+        color: #0065e1;
+        line-height: 1;
+    }
+
+    .score-max {
+        font-size: 14px;
+        color: #7f8c8d;
+    }
+
+    .score-details {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .score-message {
+        font-size: 15px;
+        color: #2c3e50;
+        margin-bottom: 12px;
+        font-weight: 500;
+    }
+
+    .score-progress-bar {
+        background: #ecf0f1;
+        border-radius: 10px;
+        height: 8px;
+        overflow: hidden;
+    }
+
+    .score-progress {
+        background: linear-gradient(90deg, #0065e1, #3498db);
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+
+    @media (max-width: 900px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .chart-card {
+        transition: transform 0.2s;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-container {
+        position: relative;
+        height: 280px;
+        margin-bottom: 10px;
+    }
+
+    .chart-note {
+        font-size: 11px;
+        color: #95a5a6;
+        text-align: center;
+        margin-top: 10px;
+        font-style: italic;
+    }
+
+    /* Activity Table */
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .activity-table th {
+        text-align: left;
+        padding: 14px 12px;
+        background: #f8fafd;
+        font-weight: 600;
+        color: #2c3e50;
+        border-bottom: 1px solid #eef2f8;
+    }
+
+    .activity-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #f0f2f5;
+        color: #5a6e7f;
+        vertical-align: middle;
+    }
+
+    .result-badge,
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .result-badge i,
+    .status-badge i {
+        font-size: 11px;
+    }
+
+    .result-badge.success,
+    .status-badge.completed {
+        background: #e8f8f5;
+        color: #27ae60;
+    }
+
+    .result-badge.danger {
+        background: #fdedec;
+        color: #e74c3c;
+    }
+
+    .result-badge.warning {
+        background: #fef9e7;
+        color: #f39c12;
+    }
+
+    .status-badge.pending {
+        background: #fff8e7;
+        color: #f39c12;
+    }
+
+    /* Cleaner background */
+    .main-content {
+        background: #f4f8fb;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stat-card {
+            padding: 15px;
+        }
+        .stat-icon i {
+            font-size: 32px;
+        }
+        .stat-info h3 {
+            font-size: 24px;
+        }
+        .score-container {
+            flex-direction: column;
+            text-align: center;
+        }
+        .chart-container {
+            height: 220px;
+        }
+        .activity-table th,
+        .activity-table td {
+            padding: 10px 8px;
+            font-size: 12px;
+        }
+    }
+</style>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Animate Health Score Circle (optional subtle effect)
+        const scoreCircle = document.querySelector('.score-circle');
+        if (scoreCircle) {
+            const score = parseInt(scoreCircle.getAttribute('data-score')) || 0;
+            const numberSpan = scoreCircle.querySelector('.score-number');
+            if (numberSpan) {
+                let current = 0;
+                const step = Math.ceil(score / 30);
+                const interval = setInterval(function () {
+                    current += step;
+                    if (current >= score) {
+                        current = score;
+                        clearInterval(interval);
+                    }
+                    numberSpan.innerText = current;
+                }, 20);
+            }
+        }
+
+        // --- Disease Chart (Pie) ---
+        const diseaseCtx = document.getElementById('diseaseChart').getContext('2d');
+        new Chart(diseaseCtx, {
+            type: 'pie',
+            data: {
+                labels: JSON.parse(document.getElementById('chart-labels').textContent),
+                datasets: [{
+                    data: JSON.parse(document.getElementById('chart-values').textContent),
+                    backgroundColor: ['#0065e1', '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 } } }
+                }
+            }
+        });
+
+        // --- Result Chart (Doughnut) ---
+        const resultCtx = document.getElementById('resultChart').getContext('2d');
+        new Chart(resultCtx, {
+            type: 'doughnut',
+            data: {
+                labels: JSON.parse(document.getElementById('result-labels').textContent),
+                datasets: [{
+                    data: JSON.parse(document.getElementById('result-values').textContent),
+                    backgroundColor: ['#e74c3c', '#27ae60'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 } } }
+                }
+            }
+        });
+
+        // --- Trend Chart (Line) ---
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: JSON.parse(document.getElementById('trend-labels').textContent),
+                datasets: [{
+                    label: "Positive Trend (1 = Positive, 0 = Negative)",
+                    data: JSON.parse(document.getElementById('trend-values').textContent),
+                    borderColor: '#0065e1',
+                    backgroundColor: 'rgba(0, 101, 225, 0.05)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#0065e1',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 1.2,
+                        ticks: { stepSize: 1, callback: function(val) { return val === 1 ? 'Positive' : val === 0 ? 'Negative' : ''; } }
+                    }
+                },
+                plugins: {
+                    tooltip: { callbacks: { label: function(ctx) { return ctx.raw === 1 ? 'Positive' : 'Negative'; } } }
+                }
+            }
+        });
+
+        // --- Model Accuracy Chart (Bar) ---
+        const modelCtx = document.getElementById('modelChart').getContext('2d');
+        new Chart(modelCtx, {
+            type: 'bar',
+            data: {
+                labels: JSON.parse(document.getElementById('model-labels').textContent),
+                datasets: [{
+                    label: "Accuracy (%)",
+                    data: JSON.parse(document.getElementById('model-values').textContent),
+                    backgroundColor: '#3498db',
+                    borderRadius: 8,
+                    barPercentage: 0.65
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: { min: 0, max: 100, title: { display: true, text: 'Accuracy (%)' } }
+                },
+                plugins: {
+                    tooltip: { callbacks: { label: function(ctx) { return ctx.raw + '%'; } } }
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}
